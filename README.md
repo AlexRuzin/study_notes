@@ -136,8 +136,110 @@ Really over-simplified version of OOP
     access, insert, removal: O(log(n)) <- hella fast
 * `std::set` (unique keys in sorted order)
     _TODO_
+    access, insert, remove: O(1) best, O(n) worst
+* `std::unordered_set` (same as above, but not ordered based on element insertion/deletion)
+* `std::pair` Pair, can be any type, simple container
+* `std::tuple` Tuple can hold a collection of elements, each can be a different type
 
+### Synchronization and Multi-threading
+*See `umsignal.h` for a good example of this
+Do not forget `std::unique_lock`, at end of scope, release an `std::mutex`
+`std::unique_lock<std::mutex> mlock(rpcIoSync);`
+#### Headers
+`
+<thread>
+<mutex>
+<future>
+<atomic>
+<condition_variable>
+`
 
+#### Thread objects
+`std::thread` object containing an instance of a thread
+`thread->join()`, `thread->detach()`, `thread->is_joinable()`
+
+### Smart Pointers
+Smart way to make unsafe pointer allocation/deallocation in C safer by performing automatic garbage collection
+`std::unique_ptr<TypeObj> a = PtrTypeObjFactory();` Creates a `std::unique_ptr`, using a factory. 
+`std::unique_ptr` own their pointer uniquely. When the `std::unique_ptr<>` instance goes out of scope, it will automatically destroy the object to which it points
+
+`std::shared_ptr<>` holds a reference count. Once the reference count reaches 0, and all instances of the object are out of scope, delete the object pointed to by the shared_ptr
+
+`std::auto_ptr<>` aye
+
+### Templates and Metaprogramming
+_TODO_
+*SFINAE* (Substitution failure is not an error) 
+Invalid substitution may not necessarily indicate an error
+https://en.wikipedia.org/wiki/Substitution_failure_is_not_an_error#:~:text=Substitution%20failure%20is%20not%20an%20error%20(SFINAE)%20is%20a%20principle,to%20describe%20related%20programming%20techniques.
+
+#### `decltype`
+Retrieves the type of the variable, useful in templates:
+```
+int a = 5;
+    decltype(a) b = a; // evaluates to int b = a;
+
+decltype(auto) func(void) {
+    int x = 5;
+    return (x); //returns int& since x is an lvalue
+}
+```
+
+### Algorithms
+_TODO_
+`<algorithm>` header
+
+#### Sorting
+`std::sort`
+`std::stable_sort`
+`std::partial_sort`
+
+#### Searching
+`std::find`, `std::binary_search`, `std::lower_bound`, `std::upper_bound`
+
+#### Other Operations
+`std::copy`, `std::move`, `std::replace`, `std::remove`, `std::merge`, `std::accumulate`
+
+### Iterators
+_TODO_
+* Input Iterators, for reading; moving forward
+* Output Iterators: For writing, moving forward
+* Bidirectional Iterators: for rw, bi-directional
+* Random Access Iterators
+`std::begin()`, `std::end()`, `std::iterator`, `std::const_iterator`
+`std::transform()`, `std::for_each()`
+
+### Function Objects
+_TODO_
+<functional> header (functional programming)
+*lambda expressions*
+
+## String Literals
+_TODO_ Improve on this.
+```
+	R"(\)" <- literal string, \ does not escape (const char *)
+	L"asdfasdf" <- UTF-8 string (wchar_t)
+	u"test" const char16_t* (UTF-16)
+	U"test" const char32_t* (UTF-32)
+```
+
+## RAII (Resource Allocation Is Initialization)
+A terrible name for a beautiful concept: encapsulating the lifecycle of a resource within a class constructor and destructor. Once the scope of the class has ended, the resource is automatically free'd. This can be implemented through the class constructor and destructor.
+
+* Encapsulate a resource into a class, for example, a `HANDLE`'s lifecycle is managed by a `class`
+* Access the resource via class, for example, interfacing with `HANDLE` is done via calling `class` methods
+* The resource must be freed once at end of scope, _ie call on the destructor_
 
 ## Other C++ notes
 * `vftable` or `vtable` is an array of function pointers that point to the definitions for that particular class
+
+_TODO_
+Livelock
+Starvation
+Locality
+
+# Windows Programming and APIs
+
+
+
+
