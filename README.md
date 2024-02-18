@@ -1,5 +1,7 @@
 # Study Notes
-Version 0.1 Feb 2024
+My personal study notes that I have been collecting over the years
+Version 0.1
+
 
 # C++ Programming
 Multi-paradigm language (OOP)
@@ -9,6 +11,7 @@ Functional
 Generic, modular
 
 ## C++ Versions
+_TODO_
 ### C++98
 ### C++03
 ### C++11
@@ -75,7 +78,66 @@ CLang
 Intel C++
 
 ## Unit Testing
-_todo_
+_TODO_
+
 *gtest* package from Google
 
 ## Object Oriented Programming (OOP)
+Really over-simplified version of OOP
+* Encapsulation
+    *Classes* 
+    Wrapping data and information in a single unit, _I.E. encapsulating complexity away from the whole, by limiting it to a single object_
+* Inheritance
+    The concept of a class inheriting the properties, state, or variables of another class
+    *Derived Class*: the class that inherits from another class (i.e. child)
+    *Base Class*: the class being inherited from
+* Polymorphism
+    Achieved through function overriding (separate from *overloading*, which allows one function to have multiple signatures and definitions)
+    In greek: _Taking many forms_ 
+    ```
+    class A {
+        public:
+        int func(void) {
+            return 1;
+        }
+    };
+
+    class B : public A {
+        public:
+        int func(void) { // func is overridden by class B implementation
+            return 2; 
+        }
+    }
+    ```
+* Abstraction
+    Virtual functions and interface classes (i.e. pure virtual classes)
+    
+    Useful for abstracting away the complexity of a certain class, for example:
+        `class Logger` is an interface class, it can log to either OutputDebugString(), stdout, or to a file. It has purely virtual methods:
+        `virtual int func(std::string s) = 0;`
+        `class ConsoleLogger : Public Logger` implements `func`, such that the definition of `func` outputs to stdout
+
+## Standard Template Library (the [un]holy STL)
+### Containers and Respective Polynomial Times/Complexity
+* `std::vector<>` (dynamic expand array, similar to a C array but you can iterate and push to it)
+    access: O(1)
+    insert/remove at end O(1)
+    insert remove at middle O(n)
+* `std::list` (essentially a linked list)
+    access: O(n) at worst, search is not ideal
+    insert/remove (beginning or end): O(1), relatively fast, otherwise O(n) at worst
+* `std::deque` (double ended fast insert queue)
+    access: O(1)
+    insert at beginning or end: O(1), middle is O(n)
+* `std::queue` (pretty much a queue)
+    push: O(1)
+    pop: O(1)
+* `std::map` (dictionary)
+    access, insert, removal: O(log(n)) <- hella fast
+* `std::set` (unique keys in sorted order)
+    _TODO_
+
+
+
+## Other C++ notes
+* `vftable` or `vtable` is an array of function pointers that point to the definitions for that particular class
