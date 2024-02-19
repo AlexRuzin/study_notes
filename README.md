@@ -319,7 +319,7 @@ push / pop at O(1)
 For extending the behaviour of functions. I.e. define a function used as a decorator, and "decorate" another function such that it is extended
 Used in web frameworks for routing URLs to view functions, logging, authorization, etc
 
-Useful in debugging and logging:
+Useful in debugging and logging, timing, authentication (for a specific function):
 ```
 def log_function_call(func):
     def wrapper(*args, **kwargs):
@@ -334,6 +334,15 @@ def add(a, b)
     return a + b
 add(3, 5)
 ```
+
+## OOP / Python Classes
+    Class: like C++ class, blueprint
+    Object: instantiation
+    Inheritance: Form child classes from parent classes
+    Encapsulation: Hiding/abstracting members of a class/object
+    Polymorphism: Overriding functions like in C++
+
+
 
 ## List Comprehension
 _Method of merging lists (i.e.), specifically a sort of 'lambda' that can be embedded into a list initialization_
