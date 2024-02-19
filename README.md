@@ -2,6 +2,64 @@
 My personal study notes that I have been collecting over the years
 Version 0.1
 
+# Table of Contents
+- [Study Notes](#study-notes)
+- [C++ Programming](#c---programming)
+  * [C++ Versions](#c---versions)
+    + [C++98](#c--98)
+    + [C++03](#c--03)
+    + [C++11](#c--11)
+    + [C++14](#c--14)
+    + [C++17](#c--17)
+      - [Structured Bindings](#structured-bindings)
+      - [`constexpr`](#-constexpr-)
+      - [Fold Expressions](#fold-expressions)
+      - [Structured Initialization](#structured-initialization)
+      - [Lambdas](#lambdas)
+      - [UTF-8 Character literals](#utf-8-character-literals)
+      - [Other features](#other-features)
+    + [C++20](#c--20)
+  * [Compilers](#compilers)
+  * [Unit Testing](#unit-testing)
+  * [Object Oriented Programming (OOP)](#object-oriented-programming--oop-)
+  * [Standard Template Library (the [un]holy STL)](#standard-template-library--the--un-holy-stl-)
+    + [Containers and Respective Polynomial Times/Complexity](#containers-and-respective-polynomial-times-complexity)
+    + [Synchronization and Multi-threading](#synchronization-and-multi-threading)
+      - [Headers](#headers)
+      - [Thread objects](#thread-objects)
+    + [Smart Pointers](#smart-pointers)
+    + [Templates and Metaprogramming](#templates-and-metaprogramming)
+      - [`decltype`](#-decltype-)
+    + [Algorithms](#algorithms)
+      - [Sorting](#sorting)
+      - [Searching](#searching)
+      - [Other Operations](#other-operations)
+    + [Iterators](#iterators)
+    + [Function Objects](#function-objects)
+  * [String Literals](#string-literals)
+  * [RAII (Resource Allocation Is Initialization)](#raii--resource-allocation-is-initialization-)
+  * [Other C++ notes](#other-c---notes)
+- [Windows Programming and APIs](#windows-programming-and-apis)
+- [Python](#python)
+  * [Language Symantics](#language-symantics)
+  * [Data Structures and Complexity](#data-structures-and-complexity)
+    + [list []](#list---)
+    + [Tuple ()](#tuple---)
+    + [Set {}](#set---)
+    + [Dictionary / map](#dictionary---map)
+    + [Bytes](#bytes)
+    + [bytearray](#bytearray)
+    + [deque](#deque)
+  * [Decorators](#decorators)
+  * [OOP / Python Classes](#oop---python-classes)
+    + [Method overriding](#method-overriding)
+    + [Method overloading](#method-overloading)
+  * [List Comprehension](#list-comprehension)
+  * [Generators](#generators)
+  * [Other language notes](#other-language-notes)
+- [File Formats](#file-formats)
+- [PE (Portable Executable)](#pe--portable-executable-)
+- [ELF (Extensible Linkable Format)](#elf--extensible-linkable-format-)
 
 # C++ Programming
 Multi-paradigm language (OOP)
@@ -342,6 +400,50 @@ add(3, 5)
     Encapsulation: Hiding/abstracting members of a class/object
     Polymorphism: Overriding functions like in C++
 
+```
+class TestClass:
+    species = "something"
+
+    # initializer / constructor (C++)
+    def __init__(self, name, age):
+        self.name = name
+        self.age = age
+
+    def get_description(self):
+        print(f'Name: {self.name} Age: {self.age}')
+
+    def print_param(self, param)
+        print(f'Param: {param}')
+
+def main()
+    test = TestClass("asdf", 434)
+    print(test.get_description())
+
+def __name__ == "__main__":
+    main()
+```
+
+
+### Method overriding 
+```
+class baseClass:
+    def func(self):
+        raise NotImplementedError("Subclass not implemented)
+
+class childClass(baseClass):
+    def func(self):
+        print(f"implement {instance.__class__.__name__}")
+```
+
+### Method overloading
+Same as C++ overloading, but just have different parameter names, nbd
+Decorators (@dec_function) can also be used to handle overloading
+
+**Overloading operators**
+
+```
+
+```
 
 
 ## List Comprehension
