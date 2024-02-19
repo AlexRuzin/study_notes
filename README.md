@@ -61,7 +61,10 @@ Version 0.1
 - [PE (Portable Executable)](#pe--portable-executable-)
 - [ELF (Extensible Linkable Format)](#elf--extensible-linkable-format-)
 
-# C++ Programming
+# C++ Programming (the language of the old gods and universe)
+__TODO__ Major rewrite of this section
+
+
 Multi-paradigm language (OOP)
 Procedural (C, callback)
 Imperative (uses statements to change the state of the program)
@@ -435,14 +438,26 @@ class childClass(baseClass):
         print(f"implement {instance.__class__.__name__}")
 ```
 
-### Method overloading
+### Method overloading (ie adding two classes together, using a defined operator)
 Same as C++ overloading, but just have different parameter names, nbd
 Decorators (@dec_function) can also be used to handle overloading
 
 **Overloading operators**
 
 ```
+class Point:
+    def __init__(self, x = 0, y = 0):
+        self.x = x
+        self.y = y
+    
+    # overload the "+" operator
+    def __add__(self, other): #other is the second class, for example c1 + c2, where both are classes
+        return Point(self.x + other.x, self.y + other.y)
 
+def main()
+    p1 = Point(4, 3)
+    p2 = Point(5, 6)
+    p3 = p1 + p2 # implement operator override
 ```
 
 
@@ -471,6 +486,9 @@ Function that returns a *lazy iterator*
 
 # File Formats
 # PE (Portable Executable)
+
+[<img src="images/Portable_Executable_32_bit_Structure_in_SVG_fixed.svg">]
+
 # ELF (Extensible Linkable Format)
 		.bss (rw data, uninitialized)
 		.comment (comment section)
