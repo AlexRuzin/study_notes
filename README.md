@@ -4,7 +4,8 @@ Version 0.1
 
 # Table of Contents
 - [Study Notes](#study-notes)
-- [C++ Programming](#c---programming)
+- [Table of Contents](#table-of-contents)
+- [C++ Programming (the language of the old gods and universe)](#c---programming--the-language-of-the-old-gods-and-universe-)
   * [C++ Versions](#c---versions)
     + [C++98](#c--98)
     + [C++03](#c--03)
@@ -53,13 +54,25 @@ Version 0.1
   * [Decorators](#decorators)
   * [OOP / Python Classes](#oop---python-classes)
     + [Method overriding](#method-overriding)
-    + [Method overloading](#method-overloading)
+    + [Method overloading (ie adding two classes together, using a defined operator)](#method-overloading--ie-adding-two-classes-together--using-a-defined-operator-)
   * [List Comprehension](#list-comprehension)
+  * [Dictionary comprehension](#dictionary-comprehension)
   * [Generators](#generators)
+  * [`with` statement](#-with--statement)
+  * [Lambda functions (anonymous functions)](#lambda-functions--anonymous-functions-)
+  * [Slicing (like in golang)](#slicing--like-in-golang-)
+  * [Unpacking](#unpacking)
+  * [`global` and `nonlocal` keywords](#-global--and--nonlocal--keywords)
+  * [`yield` keyword](#-yield--keyword)
+  * [Ellipsis (`...`)](#ellipsis-----)
+  * [Walrus Operator (`:=`)](#walrus-operator-------)
+  * [`f` strings, Format strings](#-f--strings--format-strings)
+  * [Type hints (Type Annotations)](#type-hints--type-annotations-)
+  * [Data Classes (library)](#data-classes--library-)
   * [Other language notes](#other-language-notes)
 - [File Formats](#file-formats)
-- [PE (Portable Executable)](#pe--portable-executable-)
-- [ELF (Extensible Linkable Format)](#elf--extensible-linkable-format-)
+  * [PE (Portable Executable)](#pe--portable-executable-)
+  * [ELF (Extensible Linkable Format)](#elf--extensible-linkable-format-)
 
 # C++ Programming (the language of the old gods and universe)
 __TODO__ Major rewrite of this section
@@ -351,6 +364,8 @@ when you need a collection of unique elements and efficient membership testing, 
 * frozenset is an immutable version of a _set_
 
 ### Dictionary / map 
+Note: normal dictionary is initialized using below [] format, however, dict comprehension is initialized using {} for some reason
+
 ```my_dict = [ "a": 1, "b": 2 ]
 my_dict["c"] = 3
 ```
@@ -475,9 +490,131 @@ for x in test:
 test2 = [ x for x in test2 if "a" in x ]
 ```
 
+## Dictionary comprehension
+_Same as above, but allows you initialze a dictionary in an efficient way using a lambda_
+`square_dict = { x: x**2 for x in range(10)}`
+
+
+
 ## Generators
+**Generators are iterators, you can only iterate once**
+**Generators do not store all the values in memory, they generate values**
 Used in parsing large files, CSV, data streams, etc
 Function that returns a *lazy iterator*
+
+```
+mygenerator = ( x * x for x in range(10))
+for i in mygenerator:
+    print(i)
+
+# you cannot iterate the generator twice!!!
+# i.e. this will not work:
+for i in mygenerator:
+    print(i0)
+```
+
+```
+class first_n(object):
+    def __init__(self, n):
+        self.n = n
+        self.num = 0
+
+    def __iter__(self):
+        return self
+
+    def __next__(self):
+        return self.next()
+
+    def next(self):
+        if self.num < self.n:
+            cur, self.num = self.num, self.num + 1
+            return cur
+        raise StopIteration()
+
+sum_of_first_n = sum(first_n(100000))
+```
+
+## `with` statement
+Automatic exception handling with certain functions and operations, produces cleaner code
+
+```
+with open('file_path', 'w') as file:
+    file.write("test")
+```
+
+## Lambda functions (anonymous functions)
+
+`multiply = lambda x, y: x * y`
+
+## Slicing (like in golang)
+
+```my_list = [ 1, 2, 3, 4, 5 ]
+sublist = my_list[1:3] # copy from index 1 - 3, resultant is [2, 3]
+```
+
+## Unpacking
+Allows the assignment from a sequence, list, set, tuple, into different variables
+`a, b, *rest = range(10)`
+
+## `global` and `nonlocal` keywords
+Useful for modifying scope of variables
+
+```
+def outer():
+    x = "local"
+    def inner():
+        nonlocal x
+        x = "nonlocal" # x is now outside of current scope
+    inner()
+    return x
+```
+
+## `yield` keyword
+**see [Generators](#generators)**
+* Iterable is an object that counts a list, the list itself is an iterable or iterable
+* A generator is an iterable, that is iterable only once
+* `yield` is a keyword that is used like a `return`, except it returns a generator
+
+```
+mylist = range(10)
+
+def create_generator():
+    for i in mylist:
+        yield i * i
+    
+mygenerator = create_generator()
+print(mygenerator)
+```
+
+## Ellipsis (`...`)
+_Indicates empty code section_
+```
+def func():
+    ...
+```
+
+## Walrus Operator (`:=`)
+_Assign values to variables in an expression_
+`if (n := len(a)):`
+
+## `f` strings, Format strings
+`print(f"{variable}")`
+
+## Type hints (Type Annotations) 
+_Optional type hinting_
+`def greet(name: str) -> str`
+
+## Data Classes (library)
+_Automatically generates `__init__` and `__repr__`_
+
+```
+from dataclasses import dataclass
+
+@dataclass # decorator
+class Point:
+    x: int
+    y: int
+```
 
 ## Other language notes
 * Global Interface Lock (GIL): Automatic object locking (mutex) for objects
@@ -485,11 +622,10 @@ Function that returns a *lazy iterator*
 
 
 # File Formats
-# PE (Portable Executable)
+## PE (Portable Executable)
+<img src="images/Portable_Executable_32_bit_Structure_in_SVG_fixed.svg">
 
-[<img src="images/Portable_Executable_32_bit_Structure_in_SVG_fixed.svg">]
-
-# ELF (Extensible Linkable Format)
+## ELF (Extensible Linkable Format)
 		.bss (rw data, uninitialized)
 		.comment (comment section)
 		.data & .data1 (rw data, initialized)
@@ -500,3 +636,4 @@ Function that returns a *lazy iterator*
 		.text (executable)
 		.line (contains gdb line numbers for debugging)
 		.note (notes, etc)
+
