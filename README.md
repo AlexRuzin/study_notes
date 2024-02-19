@@ -284,6 +284,44 @@ Condition variables that allow for safe management of `std::thread`
 
 `std::condition_variable`
 
+#### Atomics
+`std::atomic` used for atomic (interlocked) operations in C++
+
+##### Memory Order Symantics
+* relaxed (`memory_order_relaxed`): There are no ordering or synchronization constraints, except the modification is interlocked
+* consume (`memory_order_consume`): Rarely used _TODO_
+* acquire (`memory_order_acquire`): Ensures that memory writes before the atomic operation are not moved after it.
+* release (`memory_ordr_release`): Ensures that memory writes after the atomic operation are not moved before it.
+* acquire-release (`memory_order_acq_rel`): Combines both acquire and release semantics.
+* sequentially consistent (`memory_order_seq_cst`): The strongest memory ordering, ensuring a total order of all sequentially consistent operations.
+
+```
+std::atomic<int> counter(0);
+
+void increment() {
+    for (int i = 0; i < 10000; ++i) {
+        counter++;
+    }
+}
+
+int main() {
+    std::vector<std::thread> threads;
+
+    // Create 10 threads to increment the counter
+    for (int i = 0; i < 10; ++i) {
+        threads.emplace_back(increment);
+    }
+
+    // Wait for all threads to finish
+    for (auto &thread : threads) {
+        thread.join();
+    }
+
+    std::cout << "Counter value: " << counter << std::endl;
+
+    return 0;
+}
+```
 
 #### Thread objects
 `std::thread tNewThread = std::thread(callback, 0);`
@@ -364,13 +402,73 @@ A terrible name for a beautiful concept: encapsulating the lifecycle of a resour
 
 ## Other C++ notes
 * `vftable` or `vtable` is an array of function pointers that point to the definitions for that particular class
+* **Livelock**: when two threads are running, polling, and waiting on each other for some event, thus a cyclic depedency and the threads become locked
+* **Starvation**: indicates what the name suggests: a thread is perpetually denied access to a resource that are being locked by other competing threads. Occurs when lock aquisition is not fair, thus starvation
 
+## Locality 
+_not just C++, but a concept in architecture_
+Refers to the access of the same value or related storage location
+* **Temporal Locality**: Reuse of data in small time frames. For example in memory, if an address is accessed, there is a high chance it will be accessed again
+* **Spatial Locality**: Refers to frequently used memory that are within close proximity, useful in caching
+
+**Implementations and examples of Locality**
+1. Caching: Both forms of locality are crucial for the effective design and utilization of cache memory in computing systems. Caches keep frequently accessed data and instructions close to the CPU to reduce the access time, and a good understanding of locality patterns can significantly enhance cache performance.
+
+2. Algorithm Design: Algorithms can be optimized for better performance by arranging data structures and access patterns to maximize locality. For instance, iterating through an array sequentially exhibits high spatial locality, which is generally more cache-friendly than randomly accessing array elements.
+
+3. Memory Hierarchy Design: Computer architectures are designed considering locality principles. This includes the implementation of various levels of caching (L1, L2, L3 caches), and the design of RAM and virtual memory.
+
+4. Prefetching Strategies: Understanding data access patterns allows for effective prefetching, where the processor anticipates the needed data and loads it into the cache in advance.
+
+**Summary**
+    Deadlock: Threads are stuck waiting for each other, and there is no change in state without external intervention.
+    Livelock: Threads are actively changing their state in response to each other, but no progress is made.
+    Starvation: Some threads are unable to make progress because others are monopolizing the resources. The monopolizing threads are making progress.
+
+
+# Windows (win32) Interfaces and Internals
+The glorious Win32 API and kernel!
+## Communications and IPC
+* **IOCTL** Communication between usermode and kernelmode. Remember that this is works by usermode calling on kernel mode using a particlar IOCTL code
+* **Kernel Object Manipulation** Direct manipulation of kernel objects: i.e. threads, processes, etc
+* **Remote Procedure Call (RPC)** Windows and UNIX protocol for defining callbacks in a master, called by slave applications
+* **Mailslots** One-way IPC, applications register a mailslot and receive data from a single sender
+* **Named Pipes** Named pipes are files/device objects that can be read and written to, and therefore allows for IPC and interfacing with drivers
+* **Sockets** Useful for TCP/IP, can be used for IPC or "remote" IPC through the network, and using the network stack
+* **Synchronization** Primitives are explained below
+* **File System Communication** File I/O. Process can communicate through the fs
+* **System Calls (syscalls)** Mechanism for calling the kernel via syscalls, mostly wrapped by `ntdll.dll` and `kernel32.dll`
+* **Shared Memory** See below for APIs, but essentially `OpenProcess()`, `WriteProcessMemory()`, `MapViewOfSection()`, etc...
+* **Message Queue (MSMQ)** MQ implementation from MS
+* **Component Object Model (COM)** and **DCOM**, an extension of COM that allows for IPC and shared global objects, which can communicate over the network
+
+## APIs
+### Named Pipes
+`CreateNamedPipe()`, `ConnectNamedPipe()`, `CreateFile()`, `ReadFile()`, `WriteFile()`
+### Mailslots
+`CreateMailslot()`, see above create/read/write file
+### Winsocks
+`WSASocket()`, `bind()`, `send()`, `recv()`, `listen()`, `accept()`
+### RPC
+_TODO_ Lookup MSRPC implementation
+`RpcBindingFromStringBinding()`, `RpcBindingSetOption()`, `RpcStringBindingCompose()`
+### Memory-mapped files
+`CreateFileMapping()`, `MapViewOfFile()`
+### MSMQ
+`MQOpenQueue()`, `MQSendMessage()`, `MQRecvMessage()`
+### Process Injection
+`LoadLibrary()`, `CreateRemoteThread()`, stop thread, alter register state (`rip`) and resume thread
+* Process Hollowing: Create suspended process, replace text segment resume thread
+`WriteProcessMemory()`, `VirtualAllocEx()`
+### Registry functions
 _TODO_
-Livelock
-Starvation
-Locality
 
-# Windows Programming and APIs
+### Component Object Model (COM)
+* `IUnknown`: provides methods for reference counting an object, all objects must contain an IUnknown interface
+* IDL (Interface Definition Language) used to define interfaces (in COM and DCOM/RPC)
+`CoCreateInstance()`, `AddRef()` method, `Release()`, to increment or decrement reference count to an object
+
+
 
 # Python
 ## Language Symantics
@@ -844,6 +942,30 @@ func main() {
 	golang.org/x/net/websocket : websocks implementation
 	golang.org/x/oauth2: OAuth2 authorization via HTTP/REST (google)
 	github.com/gorilla/sessions: cookie / fs
+
+# Windows API
+
+# YARA
+Example YARA sig matching a particular string
+```
+rule RuleName {
+    meta:
+        author = "Author Name"
+        description = "Description of the rule"
+    strings:
+        $string1 = "This is a string"
+        $string2 = { E2 34 A1 C8 }
+    condition:
+        $string1 or $string2
+}
+```
+
+## Conditionals
+* Logical operators: and, or, not.
+* Count of strings: For instance, #string1 > 2 (meaning string1 should appear more than twice).
+* Positional operators: at or in to specify where in the file the strings should appear.
+* File size checks: For instance, filesize < 200KB.
+* Other YARA-specific functions and keywords, like pe.imphash() for matching specific PE file import hashes.
 
 # File Formats
 ## PE (Portable Executable)
