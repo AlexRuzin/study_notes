@@ -240,7 +240,134 @@ Locality
 
 # Windows Programming and APIs
 
+# Python
+## Language Symantics
+* Dynamically typed
+* Interpreted
+* Scripted
+* Garbage collector (internal reference counter)
+
+## Data Structures and Complexity
+* Mutability: i.e. does an object change (const)
+* Ordering: does an object maintain order
+* Duplicates: does an object maintain duplicate elements
+
+### list []
+Ordered, mutable, duplicates
+```my_list = [ 1, 2, 3]
+my_list.append(4)
+print(my_list[3]) # output is 4 
+```
+* access: O(1)
+* append: O(1)
+* insert/delete: O(n)
+* search: O(n) at worst
+* len(): O(1)
+
+### Tuple ()
+Ordered, *immutable*, duplicates
+
+when you need an ordered and immutable collection, which can also be used as a key in a dictionary. Tuples are suitable when you want to ensure the data remains unchanged and order matters.
+
+`my_list = (1, 2, 3)`
+
+* access: O(1)
+* search: O(n)
+* len(): O(1)
+
+### Set {}
+Unordered, mutable, no duplicates (advantage is that it removes duplicates automatically)
+Fast search O(1) - O(n)
+
+when you need a collection of unique elements and efficient membership testing, and when the order of elements and immutability are not important.
+
+`my_list = {1, 2, 3}`
+
+* insert: O(1) - O(n) worst
+* delete: O(1) - O(n) worst
+* search: O(1) - O(n) worst
+* len(): O(1)
+* frozenset is an immutable version of a _set_
+
+### Dictionary / map 
+```my_dict = [ "a": 1, "b": 2 ]
+my_dict["c"] = 3
+```
+
+* access: O(1)
+* insert: O(1)
+* delete: O(1)
+
+### Bytes
+Immutable array of bytes, i.e. string
+
+`my_bytes = b'hello'`
+
+### bytearray
+*mutable* array of bytes
+
+`my_array = bytearray(b'hello')`
+
+`my_array[0] = ord('H') # switch element 0 to uppercase H`
+
+### deque
+double-ended queue
+
+push / pop at O(1)
+
+## Decorators
+For extending the behaviour of functions. I.e. define a function used as a decorator, and "decorate" another function such that it is extended
+Used in web frameworks for routing URLs to view functions, logging, authorization, etc
+
+Useful in debugging and logging:
+```
+def log_function_call(func):
+    def wrapper(*args, **kwargs):
+        print(f"Calling function: {func.__name__} with args {args} kwargs {kwargs})
+        result = func(*args, *kwargs)
+        print(f"{func.__name__} return {result})
+        return result
+    return wrapper
+
+@log_function_call
+def add(a, b)
+    return a + b
+add(3, 5)
+```
+
+## List Comprehension
+_Method of merging lists (i.e.), specifically a sort of 'lambda' that can be embedded into a list initialization_
+```
+test = [ "a", "b", "c" ]
+test2 = []
+
+for x in test:
+    if "a" in x:
+        test2.append(x)
+
+# Rather do something like this
+test2 = [ x for x in test2 if "a" in x ]
+```
+
+## Generators
+Used in parsing large files, CSV, data streams, etc
+Function that returns a *lazy iterator*
+
+## Other language notes
+* Global Interface Lock (GIL): Automatic object locking (mutex) for objects
 
 
 
-a
+# File Formats
+# PE (Portable Executable)
+# ELF (Extensible Linkable Format)
+		.bss (rw data, uninitialized)
+		.comment (comment section)
+		.data & .data1 (rw data, initialized)
+		.debug (debug info)
+		.fini (finalization instructions)
+		.init (runtime initialization)
+		.rodata & .rodata1 (ro data)
+		.text (executable)
+		.line (contains gdb line numbers for debugging)
+		.note (notes, etc)
