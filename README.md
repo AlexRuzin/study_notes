@@ -27,6 +27,9 @@ Version 0.1
     + [Containers and Respective Polynomial Times/Complexity](#containers-and-respective-polynomial-times-complexity)
     + [Synchronization and Multi-threading](#synchronization-and-multi-threading)
       - [Headers](#headers)
+      - [Mutexes](#mutexes)
+      - [Locks](#locks)
+      - [Condition Variables](#condition-variables)
       - [Thread objects](#thread-objects)
     + [Smart Pointers](#smart-pointers)
     + [Templates and Metaprogramming](#templates-and-metaprogramming)
@@ -70,9 +73,23 @@ Version 0.1
   * [Type hints (Type Annotations)](#type-hints--type-annotations-)
   * [Data Classes (library)](#data-classes--library-)
   * [Other language notes](#other-language-notes)
+- [golang Programming Language](#golang-programming-language)
+  * [Variables](#variables)
+  * [Functions](#functions)
+  * [Structs and methods](#structs-and-methods)
+  * [Control](#control)
+  * [Slices and Arrays](#slices-and-arrays)
+  * [Maps](#maps)
+  * [Pointers](#pointers)
+  * [Goroutines and channels](#goroutines-and-channels)
+  * [Interfaces](#interfaces)
+  * [Golange packages](#golange-packages)
 - [File Formats](#file-formats)
   * [PE (Portable Executable)](#pe--portable-executable-)
   * [ELF (Extensible Linkable Format)](#elf--extensible-linkable-format-)
+
+<small><i><a href='http://ecotrust-canada.github.io/markdown-toc/'>Table of contents generated with markdown-toc</a></i></small>
+
 
 # C++ Programming (the language of the old gods and universe)
 __TODO__ Major rewrite of this section
@@ -216,19 +233,60 @@ Really over-simplified version of OOP
 * `std::tuple` Tuple can hold a collection of elements, each can be a different type
 
 ### Synchronization and Multi-threading
-*See `umsignal.h` for a good example of this
+*See `signal.h` for a good example of this
 Do not forget `std::unique_lock`, at end of scope, release an `std::mutex`
-`std::unique_lock<std::mutex> mlock(rpcIoSync);`
+`std::unique_lock<std::mutex> mlock(syncMutex);`
 #### Headers
-`
+```
 <thread>
 <mutex>
 <future>
 <atomic>
 <condition_variable>
-`
+```
+
+```
+bool isRunning = false;
+
+void func1(int param)
+{
+    while (isRunning) {
+        Sleep(1000);
+    }
+}
+
+int main(void)
+{
+    std::thread new_thread(func1, 0);
+
+    new_thread->detach();
+
+    Sleep(1000);
+
+    isRunning = false;
+    if (std::thread->is_joinable()) {
+        std::thread->join();
+    }
+
+    return 0;
+}
+```
+
+#### Mutexes
+`std::mutex` `std::recursive_mutex` `std::timed_mutex` `std::recursive_timed_mutex`
+
+#### Locks
+Locks are used in RAII, used for synchronizing access to resources 
+`std::lock_guard` `std::unique_lock` `std::scoped_lock` (C++17)
+
+#### Condition Variables
+Condition variables that allow for safe management of `std::thread`
+
+`std::condition_variable`
+
 
 #### Thread objects
+`std::thread tNewThread = std::thread(callback, 0);`
 `std::thread` object containing an instance of a thread
 `thread->join()`, `thread->detach()`, `thread->is_joinable()`
 
@@ -619,7 +677,173 @@ class Point:
 ## Other language notes
 * Global Interface Lock (GIL): Automatic object locking (mutex) for objects
 
+# golang Programming Language
+* Multi-paradigm
+* concurrent
+* imperative
+* functional 
+* OOP
+* static typing
 
+## Variables
+`var i = 10`
+`i := 10`
+
+## Functions
+```
+import (
+    "errors"
+    "fmt"
+)
+
+func div(x int, y int) (int, error) {
+    if y == 0 {
+        return 0, errors.New("Cannot divide by 0")
+    }
+
+    return x / y, nil
+}
+
+func main() {
+    ret, err := div(5, 0)
+
+    if err != nil {
+        fmt.Println("Error:", err)
+    }
+}
+```
+
+## Structs and methods
+```
+type testStruct struct {
+    name string
+    a int
+    b int
+}
+
+func (c testStruct) do_operation(x int, str string) (int, error) {
+    //stuff
+}
+
+func main() {
+    newStruct := testStruct(name: "test", a: 123);
+    out, err := newStruct.do_operation(134134, "dfiaifj");
+}
+```
+
+## Control
+```
+func main() {
+    for i := 0; i < 1000; i++ {
+        fmt.Println(i)
+    }
+
+    if num := 9; num == 9 {
+        //smth
+    }
+}
+```
+
+## Slices and Arrays
+**Array have fixed sizes, always const**
+**Slices are dynamic**
+```
+// Slice can be initialzed with []
+var a []int{1, 2, 3, 4, 5}
+a.append(a, 6)
+
+// Array must be constant, with a fixed size
+var b [3]int{1, 2, 3}
+var b [...]int(1, 2, 3) // array inferred by the compiler
+
+// Get slice and form new slice
+c := b[1:2] // get element 1 to element 2
+```
+
+## Maps
+_see C++ or Python section for complexities, as they are similar_
+```
+m := make(map[string]int)
+m["test"] = 1
+```
+
+## Pointers
+_Similar to C, but safer_
+```
+i := 42
+p := &42
+fmt.Println(*p)
+```
+
+## Goroutines and channels
+```
+func f(in string) int
+{
+    fmt.Println(in)
+}
+
+func main()
+{
+    go f("test")
+
+    // Create a nested thread and send data via channel (blocking)
+    ch := make(chan string) // specify the type
+    go func(param string) {
+        sleep(1000)
+        ch <- param // Send into channel
+    }("test")
+
+    //Spawn thread and block channel
+    msg := <-ch
+    fmt.Println(msg)
+}
+```
+
+## Interfaces
+_Similar to pure virtual classes, or interface classes in C++_
+_Golangs polymorphism implementation_
+```
+type Speaker interface {
+    Speak(param string) string // Define a virual/interface function
+}
+
+// Implementation for Dog
+type Dog struct {}
+
+func (f Dog) Speak(param string) {
+    fmt.Println(param)
+}
+
+// Implementation for Car
+type Cat struct {}
+
+func (f Cat) Speak(param string) {
+    fmt.Println(param)
+}
+
+func main() {
+    dog := Dog{}
+    dog.Speak("test")
+
+    cat := Cat{}
+    cat.Speak("test")
+}
+```
+
+## Golange packages
+	fmt  : formatted I/O
+	net/http : http, obvz
+	io/ioutil : file I/O and streaming
+	os : OS interoperability
+	encoding/json : JSON obvz
+	html/template : HTML
+	sync : synchronization / concurrency primitives
+	time : time API
+	
+	gorilla/mux : URL router multiplexer
+	golang.org/x/net/websocket : websocks implementation
+	golang.org/x/oauth2: OAuth2 authorization via HTTP/REST (google)
+	github.com/gorilla/sessions: cookie / fs
 
 # File Formats
 ## PE (Portable Executable)
