@@ -1,10 +1,9 @@
 # Study Notes
-My personal study notes that I have been collecting over the years
+My personal study notes that I have been collecting over the years, but in markdown for convenience purposes
+
 Version 0.1
 
 # Table of Contents
-- [Study Notes](#study-notes)
-- [Table of Contents](#table-of-contents)
 - [C++ Programming (the language of the old gods and universe)](#c---programming--the-language-of-the-old-gods-and-universe-)
   * [C++ Versions](#c---versions)
     + [C++98](#c--98)
@@ -59,6 +58,11 @@ Version 0.1
     + [Process Injection](#process-injection)
     + [Registry functions](#registry-functions)
     + [Component Object Model (COM)](#component-object-model--com-)
+- [Windows Driver Programming / NT Kernel](#windows-driver-programming---nt-kernel)
+  * [IRP Callbacks and Initialization](#irp-callbacks-and-initialization)
+    + [`IRP_MJ_DEVICE_CONTROL`](#-irp-mj-device-control-)
+  * [Usermode Communications](#usermode-communications)
+    + [IOCTL](#ioctl)
 - [Python](#python)
   * [Language Symantics](#language-symantics)
   * [Data Structures and Complexity](#data-structures-and-complexity)
@@ -107,7 +111,6 @@ Version 0.1
   * [ELF (Extensible Linkable Format)](#elf--extensible-linkable-format-)
 
 <small><i><a href='http://ecotrust-canada.github.io/markdown-toc/'>Table of contents generated with markdown-toc</a></i></small>
-
 
 
 # C++ Programming (the language of the old gods and universe)
@@ -344,12 +347,16 @@ int main() {
 
 #### Thread objects
 `std::thread tNewThread = std::thread(callback, 0);`
+
 `std::thread` object containing an instance of a thread
+
 `thread->join()`, `thread->detach()`, `thread->is_joinable()`
 
 ### Smart Pointers
 Smart way to make unsafe pointer allocation/deallocation in C safer by performing automatic garbage collection
+
 `std::unique_ptr<TypeObj> a = PtrTypeObjFactory();` Creates a `std::unique_ptr`, using a factory. 
+
 `std::unique_ptr` own their pointer uniquely. When the `std::unique_ptr<>` instance goes out of scope, it will automatically destroy the object to which it points
 
 `std::shared_ptr<>` holds a reference count. Once the reference count reaches 0, and all instances of the object are out of scope, delete the object pointed to by the shared_ptr
@@ -358,8 +365,11 @@ Smart way to make unsafe pointer allocation/deallocation in C safer by performin
 
 ### Templates and Metaprogramming
 _TODO_
+
 *SFINAE* (Substitution failure is not an error) 
+
 Invalid substitution may not necessarily indicate an error
+
 https://en.wikipedia.org/wiki/Substitution_failure_is_not_an_error#:~:text=Substitution%20failure%20is%20not%20an%20error%20(SFINAE)%20is%20a%20principle,to%20describe%20related%20programming%20techniques.
 
 #### `decltype`
@@ -496,6 +506,64 @@ _TODO_
     FileSystem objects 
     ActiveX
     IE COM objects (Navigate())	
+```
+
+
+# Windows Driver Programming / NT Kernel
+* WDF (Windows Driver Framework)
+* KMDF (Kernel-Mode Driver Framework)
+* Minifilter: (filesystem and file i/o)
+
+## IRP Callbacks and Initialization
+```
+DRIVER_OBJECT *drvObj = getDrvObj(); // Obtain driver object (i.e. instance of current driver)
+
+// Set callbacks for DRIVER_DISPATCH
+drvObj->MajorFunction[IRP_MJ_CREATE] = driverMyCreateHandler;
+drvObj->MajorFunction[IRP_MJ_DEVICE_CONTROL] = driverDeviceControlHandler; 
+```
+
+### `IRP_MJ_DEVICE_CONTROL`
+__Callback for usermode IOCTL__
+```
+drvObj->MajorFunction[IRP_MJ_DEVICE_CONTROL] = driverDeviceControlHandler; 
+
+// IOCTL definitions
+#define IOCTL_CTD_CMD_REQUEST \
+   CTL_CODE(FILE_DEVICE_UNKNOWN, 0x101, METHOD_BUFFERED, FILE_READ_DATA | FILE_WRITE_DATA)
+
+// Sample callback from usermode
+NTSTATUS driverDeviceControlHandler(PDEVICE_OBJECT DeviceObject, PIRP irp)
+{
+    PIO_STACK_LOCATION sp = IoGetCurrentIrpStackLocation(irp);
+
+    switch (sp->Parameters.DeviceIoControl.IoControlCode) {
+    case IOCTL_CTD_CMD_REQUEST: // IO_BUFFERED request
+
+    case IOCTL_CTD_CMD_RESPONSE:
+
+    default:
+
+    }
+}
+```
+
+## Usermode Communications
+### IOCTL
+_https://learn.microsoft.com/en-us/windows-hardware/drivers/kernel/buffer-descriptions-for-i-o-control-codes_
+```
+METHOD_BUFFERED
+METHOD_IN_DIRECT
+METHOD_OUT_DIRECT
+METHOD_NEITHER
+```
+```
+DriverObject->MajorFunction[IRP_MJ_DEVICE_CONTROL] = MyIoctlHandler;
+IoGetCurrentIrpStackLocation()
+switch (irpSp->Parameters.DeviceIoControl.IoControlCode) {}
+#define IOCTL_MY_OPERATION CTL_CODE(FILE_DEVICE_UNKNOWN, 0x800, METHOD_BUFFERED, FILE_ANY_ACCESS)
+CreateFile(L"\\\\.\\YourDeviceName");
+DeviceIoControl()
 ```
 
 
