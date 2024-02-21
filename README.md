@@ -29,8 +29,9 @@ Version 0.1
       - [Mutexes](#mutexes)
       - [Locks](#locks)
       - [Condition Variables](#condition-variables)
-      - [Atomics](#atomics)
+        * [Atomics](#atomics)
         * [Memory Order Symantics](#memory-order-symantics)
+        * [Common Memory Ordering Use Cases ***](#common-memory-ordering-use-cases----)
       - [Thread objects](#thread-objects)
     + [Smart Pointers](#smart-pointers)
     + [Templates and Metaprogramming](#templates-and-metaprogramming)
@@ -111,6 +112,7 @@ Version 0.1
   * [ELF (Extensible Linkable Format)](#elf--extensible-linkable-format-)
 
 <small><i><a href='http://ecotrust-canada.github.io/markdown-toc/'>Table of contents generated with markdown-toc</a></i></small>
+
 
 
 # C++ Programming (the language of the old gods and universe)
@@ -299,14 +301,44 @@ int main(void)
 
 #### Locks
 Locks are used in RAII, used for synchronizing access to resources 
-`std::lock_guard` `std::unique_lock` `std::scoped_lock` (C++17)
+* `std::lock_guard` Locked on construction, unlocked on destruction, out of scope
+* `std::unique_lock` Used in conjunction with `condition_variable`, can be locked an unlocked
+* `std::scoped_lock` (C++17)
 
 #### Condition Variables
-Condition variables that allow for safe management of `std::thread`
+* Used om conjunction with `std::unique_lock` 
+* Condition variables that allow for safe management of `std::thread`
+* Essentially wait for certain conditions to become true
+* Used in conjunction with mutexes to synchronize threads, for example, **the condition variable waits until a mutex is released**
 
-`std::condition_variable`
+`std::condition_variable` in `<condition_variable>`
 
-#### Atomics
+**Example in which you can send multiple signals to waiting threads, each will wait with a `condition_variable` until `mtx` is signalled**
+```
+std::mutex mtx;
+std::condition_variable cv;
+bool ready = false;
+
+void worker(void) {
+
+    // Acquire the mutex. i.e. reach the `CRITICAL_SECTION` for `lock`
+    std::unique_lock<std::mutex> lock(mtx);
+
+    // Wait until the lock is signalled, then execute lambda predicate
+    cv.wait(lock, []{ return ready; });
+}
+
+void signal(void) {
+    {
+        std::lock_guard<std::mutex> lock(mtx);
+        ready = true;
+    }
+
+    cv.notify_one();
+}
+```
+
+##### Atomics
 `std::atomic` used for atomic (interlocked) operations in C++
 
 ##### Memory Order Symantics
@@ -343,6 +375,24 @@ int main() {
 
     return 0;
 }
+```
+
+##### Common Memory Ordering Use Cases ***
+1. `std::memory_order_seq_cst` (Sequentially constant)
+* Default memory order for atomics, strictest and most intuitive memory order. 
+* Prevents any reordering of read/write operations
+* Is not ideal for performance
+2. `std::memory_order_acquire` and `std::memory_order_release`
+* Used for implementing mutexes, condition variables (), designing lock free data structures
+3. `std::memory_order_relaxed` 
+* No ordering requirements, very fast
+* Statistics collection, flag settings, **counter increments**
+
+```
+std::atomic<bool> flag(false);
+
+flag.store(true, std::memory_order_seq_cst);
+flag.load(std::memory_order_seq_cst);
 ```
 
 #### Thread objects
