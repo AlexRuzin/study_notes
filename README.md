@@ -1118,7 +1118,39 @@ func main() {
     * Signing a message involves generating a hash of the message, and encrypts it with its private key
     * To verify: the receiver decrypts the message using its public key and compares the hash to the message
 4. Certificate Insurance
-    
+    * Certificate Authority (CA) verifys the identify of the recipient or sender. Root CAs are third party (i.e. DigiCert, Let's Encrypt, Komodo, GlobalSign)
+
+### Cryptographic primitives
+#### Symmetric and Asymmetric Ciphers
+**Symmetric**
+1. AES256
+2. DES
+3. 3DES
+4. RC4, RC5, RC6
+**Asymmetric**
+1. RCA
+2. ECC (Elliptic curve cryptography)
+
+#### Hash Algorithms
+1. MD5
+2. CRC16, CRC32
+3. DSA (Digital Signature Algorithm)
+4. ECDSA (Elliptic Curve DSA)
+
+#### Key Exchange Algorithms
+1. Diffie-Hellman (DH) used to exchange keys over cleartext
+2. ECDH (Elliptic Curve DH)
+
+#### Cryptographic Protocols and Suites
+1. SSL/TLS 1.3 
+2. IPSec
+
+#### Message Authentication
+1. HMAC (Hash based authentication code) combination of a key and hash function
+
+#### Stream and Block Ciphers
+* **Stream Ciphers** encrypt one bit at a time (RC4)
+* **Block Ciphers** Encrypt a chain of blocks (AES)
 
 ## TLS/SSL
 <img src="images/SSL_Handshake_10-Steps-1.png">
@@ -1147,6 +1179,7 @@ content:"User-Agent|3A| BadBot v1.0"; http_header; classtype:trojan-activity; si
 ```
 
 ### Bro/Zeek
+__TODO__
 
 ### Palo Alto NGFW
 1. **Application-based Policy Enforcement**
@@ -1191,6 +1224,25 @@ rule RuleName {
 * File size checks: For instance, filesize < 200KB.
 * Other YARA-specific functions and keywords, like pe.imphash() for matching specific PE file import hashes.
 
+### Python libraries for automation
+`pydbg` Debugging malware
+`capstone` Disassembly framework
+`pefile` PE executable analysis framework
+
+### Cuckoo Sandbox
+Automated malware analysis system, runs in a sandbox and monitors APIs, behaviour and determines IoCs
+
+### Debuggers and Analysis Tools
+1. Ollydbg
+2. x64dbg
+3. dnSpy
+4. PEiD
+5. CFF Explorer
+6. HxD (hex editor)
+7. UPX
+8. Ghidra
+9. IDA
+
 ## Attack Vectors (malware)
 1. Phishing
 2. Spearphishing
@@ -1218,7 +1270,11 @@ rule RuleName {
 RDP
 
 ## Fileless malware
-Powershell and .NET stagers
+* Powershell and .NET stagers
+* Fileless: meaning all execution ocurrs in memory-only
+* Use Powershell, WMI, Office docs, etc to execute code
+* LOLBins (Living off the land binaries), that use PS, for example, to install malware or backdoors
+
 
 ## Malicious Techniques
 * **DNS Tunneling**
