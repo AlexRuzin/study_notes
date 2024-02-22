@@ -3,6 +3,7 @@ My personal study notes that I have been collecting over the years, but in markd
 
 Version 0.1
 
+* **
 # Table of Contents
 - [C++ Programming (the language of the old gods and universe)](#c---programming--the-language-of-the-old-gods-and-universe-)
   * [C++ Versions](#c---versions)
@@ -125,6 +126,7 @@ Imperative (uses statements to change the state of the program)
 Functional
 Generic, modular
 
+* **
 ## C++ Versions
 _TODO_
 ### C++98
@@ -504,7 +506,7 @@ Refers to the access of the same value or related storage location
     Livelock: Threads are actively changing their state in response to each other, but no progress is made.
     Starvation: Some threads are unable to make progress because others are monopolizing the resources. The monopolizing threads are making progress.
 
-
+* **
 # Windows (win32) Interfaces and Internals
 The glorious Win32 API and kernel!
 ## Communications and IPC
@@ -558,7 +560,7 @@ _TODO_
     IE COM objects (Navigate())	
 ```
 
-
+* **
 # Windows Driver Programming / NT Kernel
 * WDF (Windows Driver Framework)
 * KMDF (Kernel-Mode Driver Framework)
@@ -616,7 +618,7 @@ CreateFile(L"\\\\.\\YourDeviceName");
 DeviceIoControl()
 ```
 
-
+* **
 # Python
 ## Language Symantics
 * Dynamically typed
@@ -922,6 +924,7 @@ class Point:
 ## Other language notes
 * Global Interface Lock (GIL): Automatic object locking (mutex) for objects
 
+* **
 # golang Programming Language
 * Multi-paradigm
 * concurrent
@@ -1092,7 +1095,82 @@ func main() {
 
 # Windows API
 
-# YARA
+* **
+# Network Engineering and Security
+## PKI (Public Key Infrastructure)
+### Public and Private keys
+1. Key Generation
+    * RSA
+    * Choose two primes, \( p \), \( q \), and compute nonprime \( n \) such that \( n = p \times q \):
+\( n = p \times q \) 
+\( \phi(n) = (p-1) \times (q-1) \)
+    * Choose an integer \( e \) s.t. \( 1 < e < \phi(n) \)  and \( e \) and \( \phi(n) \) are coprime (two numbers are *coprime* iff their GCD (greatest common divisor) is equal to 1)
+    * Compute \( d \) as the modular multiplicative inverse of \( d \times e \mod \phi(n) \):
+    \( d \times e \mod \phi(n) = 1 \)
+    * Therefore:
+    Public Key: \( (e, n) \)
+    Private Key: \( (d, n) \)
+2. Encryption:
+        For message \( M \) and cyphertext \( C \): \( C = M^e \mod n \)
+   Decryption:
+        \( M = C^d \mod n \)
+3. Digital Signatures
+    * Signing a message involves generating a hash of the message, and encrypts it with its private key
+    * To verify: the receiver decrypts the message using its public key and compares the hash to the message
+4. Certificate Insurance
+    
+
+## TLS/SSL
+<img src="images/SSL_Handshake_10-Steps-1.png">
+
+* **
+# Malware Analysis and Research 
+
+## Tools
+### Wireshark / TCPDump
+__Recall how some common queries work__
+## Snort IDS
+Regex/pattern matching through traffic interception
+```
+alert tcp $HOME_NET any -> $EXTERNAL_NET $HTTP_PORTS (msg:"Suspected HTTP C2C Beacon"; 
+flow:to_server,established; content:"GET"; http_method; content:"/checkin.php"; http_uri; 
+pcre:"/\/checkin\.php\?id=[0-9a-f]{32}&status=ok/i"; 
+threshold:type limit, track by_src, count 1, seconds 300; classtype:trojan-activity; sid:1000002; rev:1;)
+```
+
+### Suricata IDS
+Very similar to Snort IDS
+```
+alert http any any -> any any (msg:"Suspicious C2 User-Agent Detected"; 
+flow:established,to_server; content:"GET"; http_method; 
+content:"User-Agent|3A| BadBot v1.0"; http_header; classtype:trojan-activity; sid:1000001; rev:1;)
+```
+
+### Bro/Zeek
+
+### Palo Alto NGFW
+1. **Application-based Policy Enforcement**
+    * Identify and control applications on any port, not just by protocol or port
+    * App-Id(TM) technology to identify applications
+2. **User Identification Controls**
+    * User-Id(TM) technology to tie network activity to users, not just IPs
+    * Integration with MS AD
+3. **Content Inspection and Threat Prevention**
+    * Deep packet inspection
+4. SSL Decryption/inspection
+5. URL filtering based on policy
+6. WildFire Malware Analysis
+    * Cloud-based service that integrates with the firewall to identify unknown malware, zero-day exploits, and advanced persistent threats (APTs).
+    * Automatic sharing of threat intel
+7. GlobalProtect(tm) (mobile)
+8. PAN-OS (core OS for fw)
+9. Advanced Threat Protection and Intelligence
+    * Integration with Autofocus(tm) contextual threat intelligence service
+10. Cloud integration
+11. IoT
+12. MFA
+
+### YARA
 Example YARA sig matching a particular string
 ```
 rule RuleName {
@@ -1107,12 +1185,65 @@ rule RuleName {
 }
 ```
 
-## Conditionals
 * Logical operators: and, or, not.
 * Count of strings: For instance, #string1 > 2 (meaning string1 should appear more than twice).
 * Positional operators: at or in to specify where in the file the strings should appear.
 * File size checks: For instance, filesize < 200KB.
 * Other YARA-specific functions and keywords, like pe.imphash() for matching specific PE file import hashes.
+
+## Attack Vectors (malware)
+1. Phishing
+2. Spearphishing
+3. Drive-by download (i.e. malicious site, email, bla bla)
+4. Malvertising (http redirection)
+5. Social Engineering (is this really hacking? plz don't pwn me)
+6. MitM 
+    * Sniffing
+    * ARP poisoning
+    * mDNS (multicast DNS, which is DNS via broadcast, similar to ARP)
+    * DNS Spoofing
+    * Packet Injection 
+    * Session Hijacking - temporary session tokens that are stolen and reused
+    * SSL/TLS stripping, i.e. reducing encryption difficulty
+7. USB / reusable media (see stuxnet)
+8. Supply chain attacks (hardware or software mods before it reaches consumer)
+9. RDP Exploits
+10. Botnets (DDoS/DoS)
+11. Watering hole attacks (target a specific site or org an infect them all)
+12. Fileless malware (see #fileless-malware)
+13. Mobile
+14. IoT botnets
+
+## Major exploits / vulnerabilities
+RDP
+
+## Fileless malware
+Powershell and .NET stagers
+
+## Malicious Techniques
+* **DNS Tunneling**
+* **Beaconing Intervals** Indicate potential C2 communication
+
+## Detection Techniques
+* **Constants or string literals**
+* **Hardcoded URIs**
+* **Assembler that handles decryption**
+* **Assembler that handles API resolution**
+* **Specific or Anomalous APIS**
+
+
+## IOCs (Indicators of Compromise)
+* **IP / Domain** Destination
+* **URLs** Unusual or anomalous URLSs
+* **Checksums/Hashes** that match known payloads
+* **Email addresses**
+* **Artifacts** Malware mutexes, string constants
+* **Network Sigs**
+* **System or file modification**
+* **Registry**
+* **Unusual account behaviour**
+* **Unusual DNS requests**
+* **Anomalous HTTP requests/responses**
 
 # File Formats
 ## PE (Portable Executable)
