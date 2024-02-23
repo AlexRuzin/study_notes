@@ -118,6 +118,33 @@ Version 0.1
       - [Stream and Block Ciphers](#stream-and-block-ciphers)
   * [TLS/SSL](#tls-ssl)
 - [Malware Analysis and Research](#malware-analysis-and-research)
+  * [Target APIs](#target-apis)
+    + [Network functions](#network-functions)
+    + [File Operations](#file-operations)
+    + [Registry](#registry)
+    + [Cryptographic functions (ransomware)](#cryptographic-functions--ransomware-)
+    + [Dynamic loading](#dynamic-loading)
+    + [WMI](#wmi)
+    + [Code Injection](#code-injection)
+    + [Anti-debugging](#anti-debugging)
+  * [Code Injection Techniques](#code-injection-techniques)
+    + [DLL Injection](#dll-injection)
+    + [Process Hollowing](#process-hollowing)
+    + [Remote Thread Injection](#remote-thread-injection)
+    + [APC (Asynchronous Procedure Calls) Injection](#apc--asynchronous-procedure-calls--injection)
+    + [Sample Hook Injection (C++/Win32)](#sample-hook-injection--c---win32-)
+    + [Atom Bombing](#atom-bombing)
+    + [Reflective DLL Injection](#reflective-dll-injection)
+    + [VEH (Vectored Exception Handling) Hooking](#veh--vectored-exception-handling--hooking)
+    + [Thread Execution Hijacking (context hijacking)](#thread-execution-hijacking--context-hijacking-)
+  * [Anti-debugging](#anti-debugging-1)
+    + [Exception Handling Anti-debugging](#exception-handling-anti-debugging)
+    + [Delta computation (Timing Checks)](#delta-computation--timing-checks-)
+    + [Check hardware breakpoints](#check-hardware-breakpoints)
+    + [Process and Thread Blocks](#process-and-thread-blocks)
+    + [PEB (Process Environment Block)](#peb--process-environment-block-)
+    + [Parent Process Check](#parent-process-check)
+    + [Virtual Machine Detection](#virtual-machine-detection)
   * [Tools](#tools)
     + [Wireshark / TCPDump](#wireshark---tcpdump)
   * [Snort IDS](#snort-ids)
@@ -139,6 +166,7 @@ Version 0.1
   * [ELF (Extensible Linkable Format)](#elf--extensible-linkable-format-)
 
 <small><i><a href='http://ecotrust-canada.github.io/markdown-toc/'>Table of contents generated with markdown-toc</a></i></small>
+
 * **
 
 # C++ Programming (the language of the old gods and universe)
@@ -1182,6 +1210,194 @@ func main() {
 
 * **
 # Malware Analysis and Research 
+
+## Target APIs
+### Network functions
+* `WSAStartup()`
+* `socket()`
+* `connect()`
+* `send()`
+* `recv()`
+* `WSASend()`
+* `WSARecv()`
+* `bind()`
+* `listen()`
+* `accept()`
+* `InternetOpen()`
+* `InternetConnect()`
+* `HttpSendRequest()`, `HttpOpenRequest()`
+
+### File Operations
+* `CreateFile()`
+* `ReadFile()`, `WriteFile()`
+* `DeleteFile()`
+* `CopyFile()`, `MoveFile()`
+* `SetFileAttributes()`
+
+### Registry
+* `RegOpenKeyEx()`
+* `RegQueryValueEx()`
+* `RegSetValueEx()`
+* `RegCreateKeyEx()`
+* `RegDeleteKey()`, `RegDeleteValue()`
+
+### Cryptographic functions (ransomware)
+_Include bcrypt.dll_
+* `CryptAcquireContext()`
+* `CryptEncrypt()`, `CryptDecrypt()`
+* `CryptHashData()`
+* `CryptDeriveKey()`
+* `CryptExportKey()`, `CryptImportKey()`
+
+### Dynamic loading
+* Enumeration of IAT
+* `LoadLibraryA/W()`
+* `GetProcAddress()`
+
+### WMI
+* `IWbemServices::ExecQuery` : recon function, for direct querying of WQL
+
+### Code Injection
+* `VirtualAllocEx()`, `WriteProcessMemory()`, `CreateRemoteThread()`
+* `SetWindowsHookEx()` : hooks processes
+* `SetThreadContext()` function for modify context of remote TEB
+
+### Anti-debugging
+* `IsDebuggerPresent()`
+* `CheckRemoteDebuggerPresent()`
+
+## Code Injection Techniques
+### DLL Injection
+1. Open a `HANDLE` to the remote process
+2. Allocate memory in the remote process, containing the target DLL name
+3. Call `CreateRemoteThread()` with the parameter as in step 2
+
+### Process Hollowing
+1. Create process as `PROCESS_SUSPENDED`
+2. Zero out legitimate code from the process
+3. Set target shellcode or DLL to the remote process
+4. Call `ResumeProcess()`
+
+### Remote Thread Injection
+1. `VirtualAllocEx()` with `PAGE_READWRITE_EXECUTABLE` flag
+2. `WriteProcessMemory()` to target page
+3. Call `CreateRemoteThread()` against target `HANDLE`
+
+### APC (Asynchronous Procedure Calls) Injection
+* An APC is queued to a thread of a process. When the thread enters an alertable state, the APC is executed
+
+### Sample Hook Injection (C++/Win32)
+__https://www.ired.team/offensive-security/code-injection-process-injection/how-to-hook-windows-api-using-c++__
+```
+#include "pch.h"
+#include <iostream>
+#include <Windows.h>
+
+FARPROC messageBoxAddress = NULL;
+SIZE_T bytesWritten = 0;
+char messageBoxOriginalBytes[6] = {};
+
+int __stdcall HookedMessageBox(HWND hWnd, LPCSTR lpText, LPCSTR lpCaption, UINT uType) {
+	
+	// print intercepted values from the MessageBoxA function
+	std::cout << "Ohai from the hooked function\n";
+	std::cout << "Text: " << (LPCSTR)lpText << "\nCaption: " << (LPCSTR)lpCaption << std::endl;
+	
+	// unpatch MessageBoxA
+	WriteProcessMemory(GetCurrentProcess(), (LPVOID)messageBoxAddress, messageBoxOriginalBytes, sizeof(messageBoxOriginalBytes), &bytesWritten);
+	
+	// call the original MessageBoxA
+	return MessageBoxA(NULL, lpText, lpCaption, uType);
+}
+
+int main()
+{
+	// show messagebox before hooking
+	MessageBoxA(NULL, "hi", "hi", MB_OK);
+
+	HINSTANCE library = LoadLibraryA("user32.dll");
+	SIZE_T bytesRead = 0;
+	
+	// get address of the MessageBox function in memory
+	messageBoxAddress = GetProcAddress(library, "MessageBoxA");
+
+	// save the first 6 bytes of the original MessageBoxA function - will need for unhooking
+	ReadProcessMemory(GetCurrentProcess(), messageBoxAddress, messageBoxOriginalBytes, 6, &bytesRead);
+	
+	// create a patch "push <address of new MessageBoxA); ret"
+	void *hookedMessageBoxAddress = &HookedMessageBox;
+	char patch[6] = { 0 };
+	memcpy_s(patch, 1, "\x68", 1);
+	memcpy_s(patch + 1, 4, &hookedMessageBoxAddress, 4);
+	memcpy_s(patch + 5, 1, "\xC3", 1);
+
+	// patch the MessageBoxA
+	WriteProcessMemory(GetCurrentProcess(), (LPVOID)messageBoxAddress, patch, sizeof(patch), &bytesWritten);
+
+	// show messagebox after hooking
+	MessageBoxA(NULL, "hi", "hi", MB_OK);
+
+	return 0;
+}
+```
+
+### Atom Bombing
+Using the global atom table to write code into memory of a target process, then trigger this code of execution
+```
+NTSTATUS
+NtQueueApcThread(  
+    IN HANDLE ThreadHandle,
+    IN PPS_APC_ROUTINE ApcRoutine,
+    IN PVOID SystemArgument1 OPTIONAL,
+    IN PVOID SystemArgument2 OPTIONAL,
+    IN PVOID SystemArgument3 OPTIONAL
+    );
+```
+
+### Reflective DLL Injection
+Manually loading a windows DLL, without using the standard API, this involves:
+* Manually parsing PE and allocating memory for segments
+* Write image segments to pages
+* Resolve API, and write to IAT
+* Resolve references
+
+### VEH (Vectored Exception Handling) Hooking
+* Using the VEH chain to manually route an exception handler to run code
+
+### Thread Execution Hijacking (context hijacking)
+* Alter context of remote thread (i.e. modify `rip` or `eip` registers to point to shellcode)
+
+## Anti-debugging
+* `IsDebuggerPresent()`
+* `CheckRemoteDebuggerPresent()`
+* `NtQueryInformationProcess()`
+
+### Exception Handling Anti-debugging 
+Using exception handlers to detect the presence of a debugger. Malware can generate exceptions to see how they are handled.
+
+### Delta computation (Timing Checks)
+Check delta between a and b, and if the delta is greater than the expected value, it may indicate a debugger stepping
+
+### Check hardware breakpoints
+`dr0-dr7` Registers contain values for debugging
+
+### Process and Thread Blocks
+* `NtQUeryObject()` detects debugging
+* `CreateToolhelp32Snapshot()` enumerate processes and check for debugger running
+
+### PEB (Process Environment Block)
+`BeingDebugged` flag in PEB indicates an attached debugger
+`NtGlobalFlag` may also be altered by debuggers
+
+### Parent Process Check
+_Check PPID for debugger_
+
+### Virtual Machine Detection
+* Check MAC address for VM prefix
+* Registry checks
+* Filesystem and VM guest files
+* `CPUID` instruction
+* Checking device drivers
 
 ## Tools
 ### Wireshark / TCPDump
