@@ -106,15 +106,40 @@ Version 0.1
   * [Interfaces](#interfaces)
   * [Golange packages](#golange-packages)
 - [Windows API](#windows-api)
-- [YARA](#yara)
-  * [Conditionals](#conditionals)
+- [Network Engineering and Security](#network-engineering-and-security)
+  * [PKI (Public Key Infrastructure)](#pki--public-key-infrastructure-)
+    + [Public and Private keys](#public-and-private-keys)
+    + [Cryptographic primitives](#cryptographic-primitives)
+      - [Symmetric and Asymmetric Ciphers](#symmetric-and-asymmetric-ciphers)
+      - [Hash Algorithms](#hash-algorithms)
+      - [Key Exchange Algorithms](#key-exchange-algorithms)
+      - [Cryptographic Protocols and Suites](#cryptographic-protocols-and-suites)
+      - [Message Authentication](#message-authentication)
+      - [Stream and Block Ciphers](#stream-and-block-ciphers)
+  * [TLS/SSL](#tls-ssl)
+- [Malware Analysis and Research](#malware-analysis-and-research)
+  * [Tools](#tools)
+    + [Wireshark / TCPDump](#wireshark---tcpdump)
+  * [Snort IDS](#snort-ids)
+    + [Suricata IDS](#suricata-ids)
+    + [Bro/Zeek](#bro-zeek)
+    + [Palo Alto NGFW](#palo-alto-ngfw)
+    + [YARA](#yara)
+    + [Python libraries for automation](#python-libraries-for-automation)
+    + [Cuckoo Sandbox](#cuckoo-sandbox)
+    + [Debuggers and Analysis Tools](#debuggers-and-analysis-tools)
+  * [Attack Vectors (malware)](#attack-vectors--malware-)
+  * [Major exploits / vulnerabilities](#major-exploits---vulnerabilities)
+  * [Fileless malware](#fileless-malware)
+  * [Malicious Techniques](#malicious-techniques)
+  * [Detection Techniques](#detection-techniques)
+  * [IOCs (Indicators of Compromise)](#iocs--indicators-of-compromise-)
 - [File Formats](#file-formats)
   * [PE (Portable Executable)](#pe--portable-executable-)
   * [ELF (Extensible Linkable Format)](#elf--extensible-linkable-format-)
 
 <small><i><a href='http://ecotrust-canada.github.io/markdown-toc/'>Table of contents generated with markdown-toc</a></i></small>
-
-
+* **
 
 # C++ Programming (the language of the old gods and universe)
 __TODO__ Major rewrite of this section
@@ -1242,6 +1267,7 @@ Automated malware analysis system, runs in a sandbox and monitors APIs, behaviou
 7. UPX
 8. Ghidra
 9. IDA
+10. VirusTotal
 
 ## Attack Vectors (malware)
 1. Phishing
