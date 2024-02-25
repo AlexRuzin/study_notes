@@ -576,6 +576,53 @@ The glorious Win32 API and kernel!
 * **Message Queue (MSMQ)** MQ implementation from MS
 * **Component Object Model (COM)** and **DCOM**, an extension of COM that allows for IPC and shared global objects, which can communicate over the network
 
+## Move and Named Return Value Optimization (NRVO)
+```
+#include <iostream>
+
+class Foo
+{
+public:
+    int x = 0;
+
+    // default ctor
+    Foo()
+    {
+        std::cout << "Default ctor\n";
+    }
+
+    // copy ctor
+    Foo(const Foo& rhs)
+    {
+        std::cout << "Copy ctor\n";
+    }
+};
+
+Foo CreateFooA()
+{
+    return Foo();
+}
+
+Foo CreateFooB()
+{
+    Foo temp;
+    temp.x = 42; // update member variable
+    return temp;
+}
+
+int main()
+{
+    Foo t1(CreateFooA()); 
+    Foo t2(CreateFooB()); // Object created twice
+   
+    return 0;
+}
+```
+
+1. CreateFooA() creates a temporary Foo object to return.
+2. The temporary object will then be copied into the object that will be returned by CreateFooA().
+3. The value returned by CreateFooA() will then be copied into t1.
+
 ## Active Template Library (ATL)
 
 
@@ -1410,6 +1457,15 @@ flow:to_server,established; content:"GET"; http_method; content:"/checkin.php"; 
 pcre:"/\/checkin\.php\?id=[0-9a-f]{32}&status=ok/i"; 
 threshold:type limit, track by_src, count 1, seconds 300; classtype:trojan-activity; sid:1000002; rev:1;)
 ```
+
+## Debuggers
+* Ollydbg
+* x64dbg
+* dnSpy
+
+## Static Analyzers
+* Ghidra
+* IDA Pro
 
 ### Suricata IDS
 Very similar to Snort IDS
