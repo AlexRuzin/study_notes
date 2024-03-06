@@ -4,6 +4,7 @@ My personal study notes that I have been collecting over the years, but in markd
 Version 0.1
 
 * **
+
 # Table of Contents
 - [C++ Programming (the language of the old gods and universe)](#c---programming--the-language-of-the-old-gods-and-universe-)
   * [C++ Versions](#c---versions)
@@ -49,6 +50,7 @@ Version 0.1
   * [Locality](#locality)
 - [Windows (win32) Interfaces and Internals](#windows--win32--interfaces-and-internals)
   * [Communications and IPC](#communications-and-ipc)
+  * [Move and Named Return Value Optimization (NRVO)](#move-and-named-return-value-optimization--nrvo-)
   * [Active Template Library (ATL)](#active-template-library--atl-)
   * [Win32 APIs](#win32-apis)
     + [Named Pipes](#named-pipes)
@@ -148,6 +150,8 @@ Version 0.1
   * [Tools](#tools)
     + [Wireshark / TCPDump](#wireshark---tcpdump)
   * [Snort IDS](#snort-ids)
+  * [Debuggers](#debuggers)
+  * [Static Analyzers](#static-analyzers)
     + [Suricata IDS](#suricata-ids)
     + [Bro/Zeek](#bro-zeek)
     + [Palo Alto NGFW](#palo-alto-ngfw)
@@ -164,8 +168,14 @@ Version 0.1
 - [File Formats](#file-formats)
   * [PE (Portable Executable)](#pe--portable-executable-)
   * [ELF (Extensible Linkable Format)](#elf--extensible-linkable-format-)
+- [Systems Design and Frameworks](#systems-design-and-frameworks)
+  * [Common Steps for Designing a Framework](#common-steps-for-designing-a-framework)
+  * [Design Scope](#design-scope)
+  * [Example: Twitter design](#example--twitter-design)
+- [Common Algorithms and Complexity Problems](#common-algorithms-and-complexity-problems)
 
 <small><i><a href='http://ecotrust-canada.github.io/markdown-toc/'>Table of contents generated with markdown-toc</a></i></small>
+
 
 * **
 
@@ -1617,4 +1627,24 @@ RDP
 		.line (contains gdb line numbers for debugging)
 		.note (notes, etc)
 
+# Systems Design and Frameworks
+## Common Steps for Designing a Framework
+1. Understand the problem and establish a scope (5 mins)
+2. Propose a high-level design and get buy-in (20 mins)
+3. Design deep dive (15 mins)
+4. Wrap up (5 mins)
+
+## Design Scope
+1. Clarify requirements
+2. Who will be the users? How many users do we anticipate?
+3. What features do we need?
+
+* Focus on scale
+* Focus on Performance
+
+## Example: Twitter design
+<img src="images/twitter_high_level_design.png">
+
+
 # Common Algorithms and Complexity Problems
+_TODO_
