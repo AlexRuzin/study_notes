@@ -662,6 +662,8 @@ _TODO_
 
 * **
 # Windows Driver Programming / NT Kernel
+* Windows Driver Framework (WDF) is newer than Windows Driver Model (WDM)
+* Windows Filtering Platform (WFP)
 * WDF (Windows Driver Framework)
 * KMDF (Kernel-Mode Driver Framework)
 * Minifilter: (filesystem and file i/o)
@@ -842,7 +844,7 @@ def main()
     test = TestClass("asdf", 434)
     print(test.get_description())
 
-def __name__ == "__main__":
+if __name__ == "__main__":
     main()
 ```
 
@@ -1615,3 +1617,4 @@ RDP
 		.line (contains gdb line numbers for debugging)
 		.note (notes, etc)
 
+# Common Algorithms and Complexity Problems
