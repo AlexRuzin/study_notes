@@ -6,6 +6,20 @@ Version 0.1
 * **
 
 # Table of Contents
+- [Systems Design and Frameworks](#systems-design-and-frameworks)
+  * [Common Steps for Designing a Framework](#common-steps-for-designing-a-framework)
+    + [Understand the problem and establish a scope (5 mins)](#understand-the-problem-and-establish-a-scope--5-mins-)
+    + [Propose a high-level design and get buy-in (20 mins)](#propose-a-high-level-design-and-get-buy-in--20-mins-)
+      - [High-level Design Diagram](#high-level-design-diagram)
+      - [Data Model and Schema](#data-model-and-schema)
+        * [Data Access Patterns](#data-access-patterns)
+        * [Read/Write Ratio](#read-write-ratio)
+    + [Design Deep Dive (15 mins)](#design-deep-dive--15-mins-)
+  * [Design Scope](#design-scope)
+  * [Functional Requirements](#functional-requirements)
+  * [Non-functional Requirements](#non-functional-requirements)
+  * [OAuth2](#oauth2)
+  * [Example: Twitter design](#example--twitter-design)
 - [C++ Programming (the language of the old gods and universe)](#c---programming--the-language-of-the-old-gods-and-universe-)
   * [C++ Versions](#c---versions)
     + [C++98](#c--98)
@@ -168,16 +182,93 @@ Version 0.1
 - [File Formats](#file-formats)
   * [PE (Portable Executable)](#pe--portable-executable-)
   * [ELF (Extensible Linkable Format)](#elf--extensible-linkable-format-)
-- [Systems Design and Frameworks](#systems-design-and-frameworks)
-  * [Common Steps for Designing a Framework](#common-steps-for-designing-a-framework)
-  * [Design Scope](#design-scope)
-  * [Example: Twitter design](#example--twitter-design)
 - [Common Algorithms and Complexity Problems](#common-algorithms-and-complexity-problems)
 
 <small><i><a href='http://ecotrust-canada.github.io/markdown-toc/'>Table of contents generated with markdown-toc</a></i></small>
 
 
 * **
+
+# Systems Design and Frameworks
+## Common Steps for Designing a Framework
+### Understand the problem and establish a scope (5 mins)
+* What is the magnitutde of connections?
+* How many users?
+### Propose a high-level design and get buy-in (20 mins)
+* Design the API (REST)
+* Authentication API
+* Query for specific data
+* Store specific data
+* **Do not add APIs that have no functional requirements**
+
+| Method | Path               | Description                           |
+| ------ | ------------------ | ------------------------------------- |
+| GET    | /v1/businesses/:id | Return detailed info about a business |
+| POST   | /v1/businesses     | Add a business                        |
+| PUT    | /v1/businesses/:id | Update details of a business (id)     |
+| DELETE | /v1/businesses/:id | Delete Business                       |
+
+* If two way communication is required: **websocket**
+    * **websocket** is stateful, and stateful architecture is more complex to scale in the backend
+
+#### High-level Design Diagram
+* Load Balancer is an **API gateway** (mux library)
+* Services require persistence: **databases**, or data storage layer
+
+<img src="images/design_proximity_service.png">
+
+<img src="images/design_google_maps.png">
+
+1. Database scaling
+2. High concurrency
+3. Failure scenarios
+
+#### Data Model and Schema
+##### Data Access Patterns
+##### Read/Write Ratio
+
+### Design Deep Dive (15 mins)
+Rather open-ended, look into details of the design and correct architecture
+
+## Design Scope
+1. Clarify requirements
+2. Who will be the users? How many users do we anticipate?
+3. What features do we need?
+
+* Focus on scale
+* Focus on Performance
+
+## Functional Requirements
+1. User interactions
+2. Data management
+3. Business Processes
+4. Authentication/Authorization
+5. Reporting
+6. Error Handling
+7. Performance Requirements
+8. Integration Requirements (API)
+9. Security functions (TLS)
+
+## Non-functional Requirements
+1. Performance
+2. Reliability
+3. Availability
+4. Usability
+5. Security
+6. Maintainability
+7. Portability
+8. Scalability
+9. Compliance
+10. Disaster Recovery
+
+## OAuth2
+1. Obtain Authentication
+2. Exchange an access token
+3. Use access token to make requests to API (REST)
+4. Refresh token
+
+## Example: Twitter design
+<img src="images/twitter_high_level_design.png">
 
 # C++ Programming (the language of the old gods and universe)
 __TODO__ Major rewrite of this section
@@ -1626,25 +1717,6 @@ RDP
 		.text (executable)
 		.line (contains gdb line numbers for debugging)
 		.note (notes, etc)
-
-# Systems Design and Frameworks
-## Common Steps for Designing a Framework
-1. Understand the problem and establish a scope (5 mins)
-2. Propose a high-level design and get buy-in (20 mins)
-3. Design deep dive (15 mins)
-4. Wrap up (5 mins)
-
-## Design Scope
-1. Clarify requirements
-2. Who will be the users? How many users do we anticipate?
-3. What features do we need?
-
-* Focus on scale
-* Focus on Performance
-
-## Example: Twitter design
-<img src="images/twitter_high_level_design.png">
-
 
 # Common Algorithms and Complexity Problems
 _TODO_
