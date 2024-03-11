@@ -194,6 +194,7 @@ Version 0.1
 ### Understand the problem and establish a scope (5 mins)
 * What is the magnitutde of connections?
 * How many users?
+* Is it a subscription model, and does it require premium users (whereby limiting bandwidth and storage capacity)
 ### Propose a high-level design and get buy-in (20 mins)
 * Design the API (REST)
 * Authentication API
@@ -229,6 +230,13 @@ Version 0.1
 
 ### Design Deep Dive (15 mins)
 Rather open-ended, look into details of the design and correct architecture
+
+## Twitter design example
+### Features
+1. Tweets (sending, receiving, and viewing tweets)
+2. Timeline 
+    1. User-timeline (list your own tweets)
+    2. Home timeline (tweets from people you follow)
 
 ## Design Scope
 1. Clarify requirements
