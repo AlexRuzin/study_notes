@@ -208,7 +208,7 @@ Version 0.1
 
 * **
 
-# Systems Design and Frameworks
+# System Design and Frameworks
 
 ## Content Delivery Network (CDN) Design
 ### Scrubbers
@@ -231,6 +231,13 @@ Mechanism in which multiple servers have one IP address
 DSR (Direct Server Return) allows for the server to directly return a response, without needing to route back through a load balancer
 
 ## Load Balancer Design
+**Requirements**
+| Requirements            | L4                    | L7                                                               | DNS                       |
+| ----------------------- | --------------------- | ---------------------------------------------------------------- | ------------------------- |
+| Data Requirements       | Request Packet Header | Contents of the request                                          | DNS lookup before request |
+| Session Security        | SSL passthrough       | TLS termination                                                  | Not impacted              |
+| Implementation Location | Hardware or Software  | Software Only                                                    | Fast                      |
+| Access to Content       | Content Agnostic      | Inspects and manipulates content (cookies, paths, sessions, etc) | Content agnostic          |
 
 ## Database Sharding
 
