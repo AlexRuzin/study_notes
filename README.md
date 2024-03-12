@@ -7,6 +7,14 @@ Version 0.1
 
 # Table of Contents
 - [Systems Design and Frameworks](#systems-design-and-frameworks)
+  * [Content Delivery Network (CDN) Design](#content-delivery-network--cdn--design)
+    + [Scrubbers](#scrubbers)
+    + [Proxy Servers](#proxy-servers)
+    + [DNS with Load Balancing](#dns-with-load-balancing)
+    + [Anycast](#anycast)
+  * [Load Balancer Design](#load-balancer-design)
+  * [Database Sharding](#database-sharding)
+  * [Caching](#caching)
   * [Common Steps for Designing a Framework](#common-steps-for-designing-a-framework)
     + [Understand the problem and establish a scope (5 mins)](#understand-the-problem-and-establish-a-scope--5-mins-)
     + [Propose a high-level design and get buy-in (20 mins)](#propose-a-high-level-design-and-get-buy-in--20-mins-)
@@ -15,11 +23,21 @@ Version 0.1
         * [Data Access Patterns](#data-access-patterns)
         * [Read/Write Ratio](#read-write-ratio)
     + [Design Deep Dive (15 mins)](#design-deep-dive--15-mins-)
+  * [Twitter design example](#twitter-design-example)
+    + [Core Features](#core-features)
+    + [Naive Solution](#naive-solution)
+    + [Optimized Solution](#optimized-solution)
   * [Design Scope](#design-scope)
   * [Functional Requirements](#functional-requirements)
   * [Non-functional Requirements](#non-functional-requirements)
   * [OAuth2](#oauth2)
-  * [Example: Twitter design](#example--twitter-design)
+  * [GeoIP Geolocation Backend Service](#geoip-geolocation-backend-service)
+    + [High-level Design](#high-level-design)
+      - [Search API](#search-api)
+      - [Business Management API](#business-management-api)
+    + [Database Schema](#database-schema)
+    + [Total physical sizes](#total-physical-sizes)
+    + [Service Design](#service-design)
 - [C++ Programming (the language of the old gods and universe)](#c---programming--the-language-of-the-old-gods-and-universe-)
   * [C++ Versions](#c---versions)
     + [C++98](#c--98)
@@ -185,6 +203,7 @@ Version 0.1
 - [Common Algorithms and Complexity Problems](#common-algorithms-and-complexity-problems)
 
 <small><i><a href='http://ecotrust-canada.github.io/markdown-toc/'>Table of contents generated with markdown-toc</a></i></small>
+
 
 
 * **
@@ -425,6 +444,9 @@ businesses table: 200m * 1kb = 200gb
 * Load balancer distributes API, either you search `/search/nearby` or you check business data `/businesses/{:id}`
 * **Location Based Service** is read heavy, no write. 5000 QPS (queries per second)
 * **Business Service** Handles the requests for the business objects, it writes or modifies the business database
+
+**Database Cluster and Topology**
+* Search business dataset is small, but the total business dataset is high
 
 
 * **
