@@ -190,6 +190,33 @@ Version 0.1
 * **
 
 # Systems Design and Frameworks
+
+## Content Delivery Network (CDN) Design
+### Scrubbers
+* Prevent DDoS
+* Separate malicious from legitimate traffic requests
+* Pass request to load balancer
+
+### Proxy Servers
+* Deliver content to users
+* Cached in RAM
+
+### DNS with Load Balancing
+`A` or `AAAA` records or Authoratative Records are used to distribute requests to a specific server, based on subdomain
+
+**Round Robin** DNS requests load balance by having a pool of IP addresses, and allowing each IP to handle requests such that they are equally distributed under load
+
+### Anycast
+Mechanism in which multiple servers have one IP address
+* Reduces load balancer load 
+DSR (Direct Server Return) allows for the server to directly return a response, without needing to route back through a load balancer
+
+## Load Balancer Design
+
+## Database Sharding
+
+## Caching
+
 ## Common Steps for Designing a Framework
 ### Understand the problem and establish a scope (5 mins)
 * What is the magnitutde of connections?
@@ -216,8 +243,6 @@ Version 0.1
 * Load Balancer is an **API gateway** (mux library)
 * Services require persistence: **databases**, or data storage layer
 
-<img src="images/design_proximity_service.png">
-
 <img src="images/design_google_maps.png">
 
 1. Database scaling
@@ -232,11 +257,51 @@ Version 0.1
 Rather open-ended, look into details of the design and correct architecture
 
 ## Twitter design example
-### Features
+
+<img src="images/twitter_high_level_design.png">
+
+### Core Features
 1. Tweets (sending, receiving, and viewing tweets)
 2. Timeline 
     1. User-timeline (list your own tweets)
     2. Home timeline (tweets from people you follow)
+3. Following
+
+### Naive Solution
+* Relational database design
+    * User-table
+    * Tweet table
+
+**Tweet Table**
+| tweet_id | content                        | user_id         |
+| -------- | ----------------------------   | -----------     |
+| <*sum*>  | <string 256 characters long>   | <*32bit int*>     |
+* Issue with the tweet table is the size, it will increase substantially as it needs to store historical data
+
+**User Table**
+| user_id      | User Name | Creation Date |
+| ------------ | --------- | ------------- |
+| <int 32 bit> | String    | datetime      |
+
+### Optimized Solution
+1. Optimize the home page refresh (i.e. fill the user's home page with relevant tweets)
+Tweet Send -> REST/HTTP/PUT -> API Proxy (Load Balancer) -> Redis Cluster (In-memory database, can be *n* servers with the same db), 3 machines
+* The tweet will trigger a refresh (in redis) of all home pages associated with that user
+REDIS Cluster Details
+    * Each user has a list/vector of tweets, that represents his home timeline
+    * List contains tweet ID, sender ID
+* Let's say that Alice sends a tweet, and Alice has 100 followers, then 300 user lists will be refreshed (this is only for active users)
+* Issue with this is that if a user has millions of followers, then a million lists will need to be refreshed
+* Another issue is that a user home list can be refreshed, while others are not (due to load). So some people see re-tweets while others do not see the original tweet. Still an on-going issue (apparently)
+2. Send tweet -> Load balancer -> Followers (?) -- this is unclear
+
+<img src="images/twitter_system_design.png">
+
+3. Bob Accessing Timeline
+Browser (GET) -> Load Balancer -> Redis Cluster (only one in cluster needs to answer; fastest) -> Populate bob's timeline
+* There are lots of redis machines in the cluster, only one needs to answer (that contains Bob's list), this can be done through a hash map
+* In between the Load Balancer and Redis, there is a hash lookup, that returns the redis IP containing Bob's timeline
+4. Searching for tweets? The load balancer send a request to another machine that will hash the tweet
 
 ## Design Scope
 1. Clarify requirements
@@ -275,9 +340,94 @@ Rather open-ended, look into details of the design and correct architecture
 3. Use access token to make requests to API (REST)
 4. Refresh token
 
-## Example: Twitter design
-<img src="images/twitter_high_level_design.png">
+## GeoIP Geolocation Backend Service
+**Functional Requirements**
+1. Users can search for businesses: Based on their location, get a map and list of locations of businesses near user
+2. Users can add or remove businesses
+3. Users can view information about a business
 
+**Non-functional Requirements**
+* 100million users (DAU, Daily Active Users)
+* 200million businesses
+* Latency should be low, users should be able to find nearby businesses quickly
+* Highly available, traffic spikes, etc
+
+**Assumptions** and **Calculations**
+* Assume a user makes up to 5 queries per day
+* 100m DAU (Users)
+* 200m Businesses
+
+So: `(100m DAU) x (5 searches per user) = ~5000 queries`
+
+*How much storage do we need for 200m businesses?*
+We don't know yet until we design a schema
+
+### High-level Design
+Uses REST API
+#### Search API
+* Search API Request: `GET /v1/search/nearby`
+* Note: this API contains the Geo location of the user
+
+| Field     | Description                 | Type   |
+| --------- | --------------------------- | ------ |
+| latitude  | Business location latitude  | double |
+| longitude | Business location longitude | double |
+| radius    | Optional. Default is 5KM    | int    |
+
+* Search API Response:
+```
+{
+    "total": 10,
+    "business_list": [
+        {
+            "name": "business_name"
+            "location": ...
+        }
+    ]
+}
+```
+* Pagination, or having a list of responses based on location and relevance, should be included in real life
+
+#### Business Management API
+Request:
+
+| API Path                  | Description                  |
+| ------------------------- | ---------------------------- |
+| GET /v1/businesses/:id    | Return details on a business |
+| POST /v1/businesses       | Add a business               |
+| PUT /v1/businesses/:id    | Update a business            |
+| DELETE /v1/businesses/:id | Delete business              |
+
+### Database Schema
+**Business Table**
+| Businesses  |    |
+| ----------- | -- |
+| business_id | PK |
+| address     |    |
+| city        |    |
+| country     |    |
+| latitude    |    |
+| longitude   |    |
+
+**geospatial_index**
+| business_id   | geospatial_index |
+| ------------- | ---------------- |
+| business_name | location         |
+
+### Total physical sizes
+businesses table: 200m * 1kb = 200gb
+* Just calculate based on database and size
+
+### Service Design
+
+<img src="images/design_proximity_service.png">
+
+* Load balancer distributes API, either you search `/search/nearby` or you check business data `/businesses/{:id}`
+* **Location Based Service** is read heavy, no write. 5000 QPS (queries per second)
+* **Business Service** Handles the requests for the business objects, it writes or modifies the business database
+
+
+* **
 # C++ Programming (the language of the old gods and universe)
 __TODO__ Major rewrite of this section
 
