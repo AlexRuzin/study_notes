@@ -1906,4 +1906,4 @@ RDP
 		.note (notes, etc)
 
 # Common Algorithms and Complexity Problems
-_TODO_
+<img src="images/big-o-cheat-sheet-poster.png">
