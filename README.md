@@ -209,6 +209,7 @@ Version 0.1
 * **
 
 # System Design and Frameworks
+Lookup, full doc: [System Design Interview An Insider’s Guide by Alex Xu (z-lib.org)](https://github.com/G33kzD3n/Catalogue/blob/master/System%20Design%20Interview%20An%20Insider%E2%80%99s%20Guide%20by%20Alex%20Xu%20(z-lib.org).pdf)
 
 ## Content Delivery Network (CDN) Design
 ### Scrubbers
@@ -239,9 +240,29 @@ DSR (Direct Server Return) allows for the server to directly return a response, 
 | Implementation Location | Hardware or Software  | Software Only                                                    | Fast                      |
 | Access to Content       | Content Agnostic      | Inspects and manipulates content (cookies, paths, sessions, etc) | Content agnostic          |
 
-## Database Sharding
+## Databases
+### Database Sharding
+Spliting Databases into "shards" in order to distribute load along different systems. **MSSQL, Oracle, MySQL,** etc
 
-## Caching
+### SQL vs NoSQL
+SQL: Typical table-based relational database. Large physical storage model.
+
+NoSQL: Key-Value (dictionarys). Key is an attribute name, which is linked to a value. **Redis, Voldemort, Dynamo** are examples. Better to scale. Schemas can be added on the fly and are dynamic.
+
+Wide Column Databases: Instead of tables, columnar databases have column families which are containers for rows. Useful for large datasets. Examples are **Cassandra** and **HBase**
+
+Graph Dtabases: Graph based storage (i.e. nodes, entities). Examples: **Neo4J** and **InfiniteGraph**
+
+**Which to Use?**
+1. ACID compliance, which requires SQL. If data is structured and unchanging.
+2. NoSQL is useful in large volumes of data. Think twitter tweets. Useful in cloud solutions, efficient for large scale databases which are stored in RAM. NoSQL is useful in rapid development and doesn't need to be prepped ahead of time.
+
+## CAP Theorem (Consistency, Availability, Partition Tolerance)
+
+<img src="images/cap_theorem.png">
+
+## Common Tools and Frameworks
+1. **Amazon S3** (Object Cloud Storage): useful for storing large objects, like pastebin text or images. Easy to scale in cloud
 
 ## Common Steps for Designing a Framework
 ### Understand the problem and establish a scope (5 mins)
@@ -281,6 +302,44 @@ DSR (Direct Server Return) allows for the server to directly return a response, 
 
 ### Design Deep Dive (15 mins)
 Rather open-ended, look into details of the design and correct architecture
+
+## URL Shortener Example
+**Functional Requirements**: Given a URL, shorten it. Use a checksum/hash of the input URI? Optionally pick a short link. Expiration. Redirection
+**Non-Functional**: Highly-available. Redirection should be immediate. Shortened links should neot be predictable (solved with hash).
+**Extended**: Analytics, RESP API (Solved by designing functional requirement API). Requirement for authentication (OAuth2)
+
+### Assumptions
+* Can anyone create URLs through API? Does it require a key?
+* Some frequently used URLs should be cached
+* Traffic will be 100:1 read:write ratio
+* Load will be 500m new URLs per month
+* 50B redirections per day
+* **Traffic estimate**: Queries Per Second: If we have 500million new URLs per month, then `500m / (30days * 24hours * 3600seconds) = ~200URL/s`. Redirections will be `100(read redirections) * 200 URLs/s = 20K/s` (since we have 100x more reads than writes, so 20K/s URLs will be accessed)
+* **Storage estimate**: Let's say the URL is stored for 1 month. At 500/m new URLs. Each one is 512bytes in the database. So 512b * 500m = 256,000,000,000 = 256gb of storage per month. For 5 years? 5 * 12 = 60. 60 * 256gb = 15.36TB for 5 years.
+* **Bandwidth**: Read? 200URLs/s. Write? 2URLs/s. 128kb for one API redirect. So 128kb * 200URL/s = 25.6MB/s
+
+### API (REST)
+* Accessing URLs doesn't require an API, it just reaches the shortener service
+* Create URL: Expiry date, api key, user name, original url, custom URL name
+* Delete URL: api key, shortened URI name
+
+### Database Design
+**URL Table**: URL Hash (PK), Original URL, Creation Date, UserID
+**User Table**: User ID (PK), Name, Email, CreationDate
+
+* Since there are no relationships between tables, we can use NoSQL as its faster
+* Many objects, lots of queries
+
+### Algorithm
+1. Client sends API request to Shorten
+2. Shortener sends requrest to Encoder (checksum)
+3. Checksum is stored in the database
+4. If failed the duplication, add append another unique sequence, like username
+5. Return shortened URL to user
+
+### Load Balancing
+* Can add a LB between clients and applications, application server and database, applications and cache
+* Roundrobin load distribution
 
 ## Twitter design example
 
