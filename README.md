@@ -214,7 +214,6 @@ Version 0.1
 <small><i><a href='http://ecotrust-canada.github.io/markdown-toc/'>Table of contents generated with markdown-toc</a></i></small>
 
 
-
 * **
 
 # System Design and Frameworks
@@ -249,7 +248,30 @@ DSR (Direct Server Return) allows for the server to directly return a response, 
 | Implementation Location | Hardware or Software  | Software Only                                                    | Fast                      |
 | Access to Content       | Content Agnostic      | Inspects and manipulates content (cookies, paths, sessions, etc) | Content agnostic          |
 
+## ACID-ity
+* Atomicity is guaranteed
+* Consistency in the database is guaranteed, prevents multiple states
+* Isolation: transactions are executed concurrently
+* Durability: in case of a power failure, is the data retained?
+
 ## Databases
+
+| Database Type                           | Solution                                                                                                                                                                                                                                                                                                                                                           |
+|-----------------------------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| Key–value cache                         | Apache Ignite, Couchbase, Coherence, eXtreme Scale, Hazelcast, Infinispan, Memcached, Redis, Velocity                                                                                                                                                                                                                                                              |
+| Key–value store                         | Azure Cosmos DB, ArangoDB, Amazon DynamoDB, Aerospike, Couchbase, ScyllaDB                                                                                                                                                                                                                                                                                         |
+| Key–value store (eventually consistent) | Azure Cosmos DB, Oracle NoSQL Database, Riak, Voldemort                                                                                                                                                                                                                                                                                                            |
+| Key–value store (ordered)               | FoundationDB, InfinityDB, LMDB, MemcacheDB                                                                                                                                                                                                                                                                                                                         |
+| Tuple store                             | Apache River, GigaSpaces, Tarantool, TIBCO ActiveSpaces, OpenLink Virtuoso                                                                                                                                                                                                                                                                                         |
+| Triplestore                             | AllegroGraph, MarkLogic, Ontotext-OWLIM, Oracle NoSQL database, Profium Sense, Virtuoso Universal Server                                                                                                                                                                                                                                                           |
+| Object database                         | Objectivity/DB, Perst, ZODB, db4o, GemStone/S, InterSystems Caché, JADE, ObjectDatabase++, ObjectDB, ObjectStore, ODABA, Realm, OpenLink Virtuoso, Versant Object Database                                                                                                                                                                                         |
+| Document store                          | Azure Cosmos DB, ArangoDB, BaseX, Clusterpoint, Couchbase, CouchDB, DocumentDB, eXist-db, Google Cloud Firestore, IBM Domino, MarkLogic, MongoDB, RavenDB, Qizx, RethinkDB, Elasticsearch, OrientDB                                                                                                                                                                |
+| Wide-column store                       | Azure Cosmos DB, Amazon DynamoDB, Bigtable, Cassandra, Google Cloud Datastore, HBase, Hypertable, ScyllaDB                                                                                                                                                                                                                                                         |
+| Native multi-model database             | ArangoDB, Azure Cosmos DB, OrientDB, MarkLogic, Apache Ignite,[23][24] Couchbase, FoundationDB, Oracle Database                                                                                                                                                                                                                                                    |
+| Graph database                          | Azure Cosmos DB, AllegroGraph, ArangoDB, InfiniteGraph, Apache Giraph, MarkLogic, Neo4J, OrientDB, Virtuoso                                                                                                                                                                                                                                                        |
+| Multivalue database                     | D3 Pick database, Extensible Storage Engine (ESE/NT), InfinityDB, InterSystems Caché, jBASE Pick database, mvBase Rocket Software, mvEnterprise Rocket Software, Northgate Information Solutions Reality (the original Pick/MV Database), OpenQM, Revelation Software's OpenInsight (Windows) and Advanced Revelation (DOS), UniData Rocket U2, UniVerse Rocket U2 |
+
+
 ### Database Sharding
 Spliting Databases into "shards" in order to distribute load along different systems. **MSSQL, Oracle, MySQL,** etc
 
@@ -396,6 +418,18 @@ Browser (GET) -> Load Balancer -> Redis Cluster (only one in cluster needs to an
 * There are lots of redis machines in the cluster, only one needs to answer (that contains Bob's list), this can be done through a hash map
 * In between the Load Balancer and Redis, there is a hash lookup, that returns the redis IP containing Bob's timeline
 4. Searching for tweets? The load balancer send a request to another machine that will hash the tweet
+
+## Webcrawler Service
+
+<img src="images/web_crawler.png">
+
+## Chat Server
+* Use HBase (wide column database), database sharding
+* Load balancer splits up users into their respective chat servers
+* Chat servers can either do push (client pushes messages to server, requires open connection), or pull (clients periodically checks for new messages)
+* Each chat server has a connection pool, with a particular client
+
+<img src="images/chat_server_design.png">
 
 ## Design Scope
 1. Clarify requirements
@@ -1956,6 +1990,12 @@ RDP
 * **Unusual account behaviour**
 * **Unusual DNS requests**
 * **Anomalous HTTP requests/responses**
+
+## Authentication and Security Frameworks
+### OAuth 2.0
+_TODO_
+* Designed to be a resource authorization protocol, not specifically authentication
+* Defines an API token that acts as a resource handler
 
 # File Formats
 ## PE (Portable Executable)
