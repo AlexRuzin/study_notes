@@ -13,6 +13,7 @@ Version 0.1
     + [DNS with Load Balancing](#dns-with-load-balancing)
     + [Anycast](#anycast)
   * [Load Balancer Design](#load-balancer-design)
+  * [ACID-ity](#acid-ity)
   * [Databases](#databases)
     + [Database Sharding](#database-sharding)
     + [SQL vs NoSQL](#sql-vs-nosql)
@@ -36,6 +37,8 @@ Version 0.1
     + [Core Features](#core-features)
     + [Naive Solution](#naive-solution)
     + [Optimized Solution](#optimized-solution)
+  * [Webcrawler Service](#webcrawler-service)
+  * [Chat Server](#chat-server)
   * [Design Scope](#design-scope)
   * [Functional Requirements](#functional-requirements)
   * [Non-functional Requirements](#non-functional-requirements)
@@ -206,6 +209,8 @@ Version 0.1
   * [Malicious Techniques](#malicious-techniques)
   * [Detection Techniques](#detection-techniques)
   * [IOCs (Indicators of Compromise)](#iocs--indicators-of-compromise-)
+  * [Authentication and Security Frameworks](#authentication-and-security-frameworks)
+    + [OAuth 2.0](#oauth-20)
 - [File Formats](#file-formats)
   * [PE (Portable Executable)](#pe--portable-executable-)
   * [ELF (Extensible Linkable Format)](#elf--extensible-linkable-format-)
@@ -218,6 +223,10 @@ Version 0.1
 
 # System Design and Frameworks
 Lookup, full doc: [System Design Interview An Insider’s Guide by Alex Xu (z-lib.org)](https://github.com/G33kzD3n/Catalogue/blob/master/System%20Design%20Interview%20An%20Insider%E2%80%99s%20Guide%20by%20Alex%20Xu%20(z-lib.org).pdf)
+
+**Typical System Design**
+
+<img src="images/system_design_primer.png">
 
 ## Content Delivery Network (CDN) Design
 ### Scrubbers
