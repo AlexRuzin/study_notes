@@ -109,6 +109,32 @@ Version 0.1
 - [Windows Driver Programming / NT Kernel](#windows-driver-programming---nt-kernel)
   * [IRP Callbacks and Initialization](#irp-callbacks-and-initialization)
     + [`IRP_MJ_DEVICE_CONTROL`](#-irp-mj-device-control-)
+  * [IOCTL (I/O Control)](#ioctl--i-o-control-)
+  * [IRQLs](#irqls)
+    + [`PASSIVE_LEVEL` (IRQL 0)](#-passive-level---irql-0-)
+    + [`APC_LEVEL` (IRQL 1)](#-apc-level---irql-1-)
+    + [`DISPATCH_LEVEL` (IRQL 2)](#-dispatch-level---irql-2-)
+    + [`DEVICE_LEVEL` (IRQL 3-26)](#-device-level---irql-3-26-)
+    + [Other IRQLs](#other-irqls)
+  * [Synchronization Primitives](#synchronization-primitives)
+    + [Spinlocks](#spinlocks)
+    + [Mutexes](#mutexes-1)
+    + [Semaphore](#semaphore)
+    + [Fast Mutex](#fast-mutex)
+  * [Executive Resources](#executive-resources)
+  * [Dispatcher Objects](#dispatcher-objects)
+  * [Interlocked Operations](#interlocked-operations)
+  * [Read-Write Locks](#read-write-locks)
+  * [Paged Memory](#paged-memory)
+  * [Non-paged Memory](#non-paged-memory)
+  * [Memory Routines / API](#memory-routines---api)
+  * [DMA (Direct Memory Access)](#dma--direct-memory-access-)
+  * [Kernel Objects in WDM _TODO_](#kernel-objects-in-wdm--todo-)
+  * [Threads _TODO_](#threads--todo-)
+  * [User-mode to kernel mode comms](#user-mode-to-kernel-mode-comms)
+  * [System Calls](#system-calls)
+  * [Functions _TODO_](#functions--todo-)
+  * [APC/DPC](#apc-dpc)
   * [Usermode Communications](#usermode-communications)
     + [IOCTL](#ioctl)
 - [Python](#python)
@@ -217,6 +243,7 @@ Version 0.1
 - [Common Algorithms and Complexity Problems](#common-algorithms-and-complexity-problems)
 
 <small><i><a href='http://ecotrust-canada.github.io/markdown-toc/'>Table of contents generated with markdown-toc</a></i></small>
+
 
 
 * **
@@ -1100,6 +1127,160 @@ NTSTATUS driverDeviceControlHandler(PDEVICE_OBJECT DeviceObject, PIRP irp)
     }
 }
 ```
+
+## IOCTL (I/O Control)
+Initialally, open a file handle to the driver: `CreateFile(L"\\\\.\\YourDeviceName");`, then `DeviceIoControl()` is called from usermode, specify particular IOCTL:
+```
+#define IOCTL_CTD_CMD_REQUEST \
+   CTL_CODE(FILE_DEVICE_UNKNOWN, 0xa01, METHOD_BUFFERED, FILE_READ_DATA | FILE_WRITE_DATA)
+
+#define IOCTL_CTD_CMD_RESPONSE \
+   CTL_CODE(FILE_DEVICE_UNKNOWN, 0xa02, METHOD_BUFFERED, FILE_READ_DATA | FILE_WRITE_DATA)
+```
+
+Driver intercepts code by setting the IRP callback:
+
+`DriverObject->MajorFunction[IRP_MJ_DEVICE_CONTROL] = MyIoctlHandler;`
+
+From there, switch IOCTL codes:
+
+`switch (irpSp->Parameters.DeviceIoControl.IoControlCode) {}`
+
+## IRQLs
+### `PASSIVE_LEVEL` (IRQL 0)
+* Most code runs at passive
+* Thread execution
+* I/O
+* Paged memory access
+* Synchronization primitives
+* Handles system calls
+* `KMUTEX`, semaphores, spinlock, etc
+
+### `APC_LEVEL` (IRQL 1)
+* Handles Asynchronous Procedure Calls (APCs) from services
+* Allows fast mutex
+
+### `DISPATCH_LEVEL` (IRQL 2)
+* Deferred Procedure Calls (DPCs) _TODO_ how do DPCs differ from APCs?
+* Non-paged memory access only
+* Fast mutex
+* Direct Memory Access (DMA)
+
+### `DEVICE_LEVEL` (IRQL 3-26)
+* Interrupt Service Routines (ISRs) run at this level, which are callbacks from devices, these respond to hardware interruprs
+
+### Other IRQLs
+* `PROFILE_LEVEL` (IRQL 27)
+* `CLOCK_LEVEL` (IRQL 28)
+* `IPI_LEVEL0` (IRLQ30)
+* `POWER_LEVEL` (IRQL 30)
+* `HIGH_LEVEL` (IRQL 31), for critical operations; cannot be context switched or interrupted
+
+## Synchronization Primitives
+### Spinlocks
+* Poll until release of spinlock
+* IRQL >= DISPATCH_LEVEL
+* KeAcquireSpinLock() KeReleaseSpinLock()
+
+### Mutexes
+* `KMUTEX`
+* IRQL is `PASSIVE_LEVEL`
+* `KeInitializeMutex()`, `KeWaitForSingleObject()`, `KeReleaseMutex()`
+
+### Semaphore
+* Controlling access to a resource pool
+* `PASSIVE_LEVEL`
+* `KeInitializeSemaphore()` `KeWaitForSingleObject()` `KeReleaseSemaphore()`
+
+### Fast Mutex
+_TODO_ Get code sample
+* `APC_LEVEL`
+* `ExAcquireFastMutex()` `ExReleaseFastMutex()`
+
+## Executive Resources
+* More flexible than mutexes, allowing shared and exclusive access
+* `PASSIVE_LEVEL`
+* `ExInitializeResourceLite()` `ExAcquireResourceExclusiveLite()` `ExReleaseResourceLite()`
+
+## Dispatcher Objects
+* Event Signalling
+* `PASSIVE_LEVEL`, `APC_LEVEL`
+* `KeSetEvent()` `KeWaitForSingleObject()`
+
+## Interlocked Operations
+* Any IRQL
+* `InterlockedIncrement()` `InterlockedCompareExchange()`
+
+## Read-Write Locks
+* `PASSIVE_LEVEL`
+* `ExInitializeResourceLite()`
+
+## Paged Memory
+* `PASSIVE_LEVEL` can/should use, `APC_LEVEL`
+* `ExAllocatePoolWithTag(PagedPool, 'Efl\0');`
+* Can result in page faults, therefore cannot be used for higher IRQLs
+
+## Non-paged Memory
+* Greater than or equal to `APC_LEVEL` requires nonpaged memory
+* ExAllocatePoolWithTag(NonPagedPool)
+* Cannot be paged out
+
+## Memory Routines / API
+* `MmAllocateContiguousMemory()`
+* `ExAllocatePoolWithTag()`
+* `RtlZeroMemory()`
+* `ExFreePoolWithTag()`
+
+## DMA (Direct Memory Access)
+`MmAllocateContiguousMemory()`
+
+## Kernel Objects in WDM _TODO_
+* IRP I/O Request Packets
+* Driver Object
+    * PDO (Physical Device Objects)
+    * FDO (Filter Device Object)
+* Dispatch Routine
+    * `DriverEntry()`
+* Lookaside Lists
+* Event Objects
+* Registry objects
+* Security Descriptors
+    * `RtlInitUnicodeString(&sddlString, L"D:P(A;;GA;;;SY)(A;;GA;;;BA)");`
+
+## Threads _TODO_
+`PsCreateSystemThread()`
+
+## User-mode to kernel mode comms
+* IOCTL
+* Read/Write Requests ReadFile(), WriteFile()
+* Memory mapped I/O (between user and kernel mode)
+* System calls
+* Shared memory
+* Named pipes, mailslots
+* WMI
+
+## System Calls
+* `SYSENTER`, `INT 0x2e`
+* SSDT (System Service Dispatch Table)
+
+## Functions _TODO_
+* `KeInsertQueueDpc()` `KeRemoveQueueDpc()`
+* `ZwReadFile()` `ZwWriteFile()`
+* `ZwCreateKey()` `ZwQueryValueKey()`
+* `ZwQuerySystemInformation()` `ZwSetSystemInformation()` `PASSIVE_LEVEL`
+
+## APC/DPC
+**Asynchrnous Procedure Calls**
+
+IRQL: APCs typically run at PASSIVE_LEVEL or APC_LEVEL. The PASSIVE_LEVEL is the lowest level, allowing for most thread-based and user-mode operations. APC_LEVEL is slightly above PASSIVE_LEVEL but below DISPATCH_LEVEL, designed to allow certain kernel-mode operations to be performed asynchronously while blocking lower priority operations.
+
+Purpose: APCs are used to execute operations asynchronously in the context of a specific thread. There are two types of APCs: User APCs, which can be delivered only when a thread is in an alertable state waiting for an event (thus executing in user mode), and Kernel APCs, which are executed when the thread is running in kernel mode but at a lower IRQL, allowing for preemptive multitasking within the kernel.
+
+**Deferred Procedure Calls**
+
+IRQL: DPCs are executed at DISPATCH_LEVEL, which is higher than APC_LEVEL and is used for high-priority kernel-mode operations that do not require immediate attention but must be executed before the system can attend to lower-priority tasks.
+
+Purpose: DPCs are primarily used for deferred execution of kernel-mode functions, typically as a response to hardware interrupts. When an ISR concludes that a longer processing task is needed but not necessarily immediately, it can schedule a DPC to perform this task. Because DPCs run at DISPATCH_LEVEL, they preempt most other activities in the system, ensuring that the deferred task is executed relatively quickly but without disrupting the handling of current hardware interrupts.
 
 ## Usermode Communications
 ### IOCTL
@@ -2024,3 +2205,4 @@ _TODO_
 
 # Common Algorithms and Complexity Problems
 <img src="images/big-o-cheat-sheet-poster.png">
+
