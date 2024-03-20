@@ -1176,10 +1176,22 @@ From there, switch IOCTL codes:
 * `POWER_LEVEL` (IRQL 30)
 * `HIGH_LEVEL` (IRQL 31), for critical operations; cannot be context switched or interrupted
 
+
+<img src="images/interrupt_request_level.png">
+
+* "Once a CPU is executing at an IRQL above PASSIVE_LEVEL, an activity on that CPU can be preempted only by an activity that executes at a higher IRQL."
+* The IRQLs between DISPATCH_LEVEL and PROFILE_LEVEL are reserved for hardware 
+* "Always access shared data at the same elevated IRQL."
+* "Code executing at or above DISPATCH_LEVEL must not cause page faults."
+
+[Interrupt Request Level - Primer](https://www-user.tu-chemnitz.de/~heha/oney_wdm/ch04c.htm)
+
+<img src="images/irql_priority.png">
+
 ## Synchronization Primitives
 ### Spinlocks
 * Poll until release of spinlock
-* IRQL >= DISPATCH_LEVEL
+* IRQL >= DISPATCH_LEVEL, raises IRQL, operates at DISPATCH_LEVEL
 * KeAcquireSpinLock() KeReleaseSpinLock()
 
 ### Mutexes
