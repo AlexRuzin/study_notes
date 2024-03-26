@@ -6,6 +6,15 @@ Version 0.1
 * **
 
 # Table of Contents
+
+- [Common Algorithms and Complexity Problems](#common-algorithms-and-complexity-problems)
+  * [Data Processing](#data-processing)
+    + [Optimizations for large datasets](#optimizations-for-large-datasets)
+    + [Optimizations for disk-based memory (not in RAM)](#optimizations-for-disk-based-memory--not-in-ram-)
+  * [Binary Search Tree (`std::map` - Ordered via BST)](#binary-search-tree---std--map----ordered-via-bst-)
+    + [Applications of BST](#applications-of-bst)
+  * [Hash map (`std::unordered_map`)](#hash-map---std--unordered-map--)
+  * [Singleton](#singleton)
 - [System Design and Frameworks](#system-design-and-frameworks)
   * [Content Delivery Network (CDN) Design](#content-delivery-network--cdn--design)
     + [Scrubbers](#scrubbers)
@@ -68,19 +77,23 @@ Version 0.1
   * [Compilers](#compilers)
   * [Unit Testing](#unit-testing)
   * [Object Oriented Programming (OOP)](#object-oriented-programming--oop-)
-  * [Standard Template Library (the [un]holy STL)](#standard-template-library--the--un-holy-stl-)
+  * [Data Processing in C++](#data-processing-in-c--)
+  * [Standard Template Library (STL)](#standard-template-library--stl-)
     + [Containers and Respective Polynomial Times/Complexity](#containers-and-respective-polynomial-times-complexity)
     + [Synchronization and Multi-threading](#synchronization-and-multi-threading)
+      - [Observer Model](#observer-model)
       - [Headers](#headers)
       - [Mutexes](#mutexes)
       - [Locks](#locks)
       - [Condition Variables](#condition-variables)
+      - [Ordered Execution using `std::condition_variable`](#ordered-execution-using--std--condition-variable-)
         * [Atomics](#atomics)
         * [Memory Order Symantics](#memory-order-symantics)
         * [Common Memory Ordering Use Cases ***](#common-memory-ordering-use-cases----)
       - [Thread objects](#thread-objects)
     + [Smart Pointers](#smart-pointers)
     + [Templates and Metaprogramming](#templates-and-metaprogramming)
+      - [Generic Cache Template Example](#generic-cache-template-example)
       - [`decltype`](#-decltype-)
     + [Algorithms](#algorithms)
       - [Sorting](#sorting)
@@ -92,6 +105,8 @@ Version 0.1
   * [RAII (Resource Allocation Is Initialization)](#raii--resource-allocation-is-initialization-)
   * [Other C++ notes](#other-c---notes)
   * [Locality](#locality)
+  * [Example Questions](#example-questions)
+    + [Palindrome](#palindrome)
 - [Windows (win32) Interfaces and Internals](#windows--win32--interfaces-and-internals)
   * [Communications and IPC](#communications-and-ipc)
   * [Move and Named Return Value Optimization (NRVO)](#move-and-named-return-value-optimization--nrvo-)
@@ -240,11 +255,79 @@ Version 0.1
 - [File Formats](#file-formats)
   * [PE (Portable Executable)](#pe--portable-executable-)
   * [ELF (Extensible Linkable Format)](#elf--extensible-linkable-format-)
-- [Common Algorithms and Complexity Problems](#common-algorithms-and-complexity-problems)
 
 <small><i><a href='http://ecotrust-canada.github.io/markdown-toc/'>Table of contents generated with markdown-toc</a></i></small>
 
 
+
+* **
+
+# Common Algorithms and Complexity Problems
+
+## Data Processing
+
+### Optimizations for large datasets
+
+1) Identify bottlenecks **profiling**, **benchmarking**
+2) Determine algorithm and data structures 
+3) Identify algorithmic efficiency
+4) Identify memory allocation/deallocation issues
+5) Identify unnecessary instantiation
+6) Verify that structures are aligned
+7) Use multi-threading and synchronization, if possible
+8) Use a thread pool (creating/destroying threads is expensive)
+9) Cache optimization (spatial and temporal locality)
+10) Compiler optimization flags (`-O3`)
+11) Refactoring
+12) Loop unrolling
+13) Minimize locking
+14) Buffering, Batching
+15) Scalability
+
+### Optimizations for disk-based memory (not in RAM)
+
+* `mmap` on Linux lets you map the file into memory without reading into memory entirely
+* Use a database like NoSQL (Redis)
+* Vectorization (SIMD)
+
+
+## Binary Search Tree (`std::map` - Ordered via BST)
+
+* Sorted by key, using BST
+* Automatically sorted using the BST each time an element is inserted
+
+
+1. Each node has two children, left and right. "If value is greater than node, store in left, otherwise right"
+2. Searching is O(log (n)) because for each node that is entered, half of the search tree is not searched
+3. No duplications
+
+### Applications of BST
+* Sorted dictionary
+* Database indexing
+* Symbol tables (compilers)
+
+**Insertion** 
+
+Same as **search** since it requires time to find a node to insert into O(log(n))
+
+**Traversal**
+
+Can be done through recursive functions i.e. root, left subtree, right subtree, etc
+
+## Hash map (`std::unordered_map`)
+
+* Key -> hash algo -> integer
+* Performance is generally faster (O(1)) for search and insert
+* Cache implementations (quick access of resources based on URL)
+* Word Frequency count
+* Indexes for unordered data
+
+## Singleton
+
+A singleton is a design pattern where only one object of its kind exists and can be accessed. For example a class with a static variable. Each instance of the class ensures that the resource is locked before access (mutex guard)
+
+
+<img src="images/big-o-cheat-sheet-poster.png">
 
 * **
 
@@ -713,7 +796,20 @@ Really over-simplified version of OOP
         `virtual int func(std::string s) = 0;`
         `class ConsoleLogger : Public Logger` implements `func`, such that the definition of `func` outputs to stdout
 
-## Standard Template Library (the [un]holy STL)
+## Data Processing in C++
+* **Primitive Datatypes** include `int`, `floats`, `char`, `double`, `bool`. 
+* **Composite Datatypes** include `struct`, `class`, `std::array`, STL containers, database records, etc
+* **Files and Streams** include text, binaries, network streams (TCP/IP), CSV, JSON, XML, serialization
+* **Containers and Data Structures** include STL, `std::vector`, `std::list`, `std::array`. Data processing is achieved by algorithms (see complexity): searching, sorting, filtering, access, etc
+
+**Applications**
+1) Numerical and scientific computing
+2) Data Analysis and Machine Learning
+3) Game dev
+4) System monitoring utilities
+5) Network programming
+
+## Standard Template Library (STL)
 ### Containers and Respective Polynomial Times/Complexity
 * `std::vector<>` (dynamic expand array, similar to a C array but you can iterate and push to it)
     access: O(1)
@@ -738,9 +834,19 @@ Really over-simplified version of OOP
 * `std::tuple` Tuple can hold a collection of elements, each can be a different type
 
 ### Synchronization and Multi-threading
+
+
 *See `signal.h` for a good example of this
 Do not forget `std::unique_lock`, at end of scope, release an `std::mutex`
 `std::unique_lock<std::mutex> mlock(syncMutex);`
+
+#### Observer Model
+
+https://refactoring.guru/design-patterns/observer/cpp/example
+
+An observer is a design pattern in C++ that allows objects (observers) to be signalled when an state change ocurrs. This is especially useful in GUI programming.
+
+
 #### Headers
 ```
 <thread>
@@ -783,7 +889,7 @@ int main(void)
 #### Locks
 Locks are used in RAII, used for synchronizing access to resources 
 * `std::lock_guard` Locked on construction, unlocked on destruction, out of scope
-* `std::unique_lock` Used in conjunction with `condition_variable`, can be locked an unlocked
+* `std::unique_lock` Used in conjunction with `condition_variable`, can be locked and unlocked
 * `std::scoped_lock` (C++17)
 
 #### Condition Variables
@@ -816,6 +922,24 @@ void signal(void) {
     }
 
     cv.notify_one();
+}
+```
+
+#### Ordered Execution using `std::condition_variable`
+
+This allows for each thread to be dispatched in the order that it was locked
+
+```
+std::mutex mtx;
+std::condition_variable cv;
+int order = 0;
+
+void threadFunction(int id) {
+    std::unique_lock<std::mutex> lock(mtx);
+    cv.wait(lock, [id]{ return order == id; });
+    std::cout << "Thread " << id << std::endl;
+    order++;
+    cv.notify_all();
 }
 ```
 
@@ -895,6 +1019,55 @@ Smart way to make unsafe pointer allocation/deallocation in C safer by performin
 `std::auto_ptr<>` aye
 
 ### Templates and Metaprogramming
+
+#### Generic Cache Template Example
+```
+template<typename Key, typename Value>
+class Cache {
+public:
+    struct CacheItem {
+        Value value;
+        std::chrono::steady_clock::time_point expiryTime;
+    };
+
+private:
+    std::unordered_map<Key, CacheItem> cacheMap;
+    std::mutex cacheMutex; // For thread safety
+    std::chrono::seconds defaultTTL; // Time-to-live for each cache item
+
+public:
+    Cache(std::chrono::seconds ttl) : defaultTTL(ttl) {}
+
+    void put(const Key& key, const Value& value, std::chrono::seconds ttl = std::chrono::seconds(0)) {
+        std::lock_guard<std::mutex> lock(cacheMutex);
+        auto expiryTime = std::chrono::steady_clock::now() + (ttl.count() > 0 ? ttl : defaultTTL);
+        cacheMap[key] = {value, expiryTime};
+    }
+
+    bool get(const Key& key, Value& value) {
+        std::lock_guard<std::mutex> lock(cacheMutex);
+        auto it = cacheMap.find(key);
+        if (it != cacheMap.end() && it->second.expiryTime > std::chrono::steady_clock::now()) {
+            value = it->second.value;
+            return true;
+        }
+        return false;
+    }
+
+    void removeExpiredItems() {
+        std::lock_guard<std::mutex> lock(cacheMutex);
+        auto now = std::chrono::steady_clock::now();
+        for (auto it = cacheMap.begin(); it != cacheMap.end(); ) {
+            if (it->second.expiryTime <= now) {
+                it = cacheMap.erase(it);
+            } else {
+                ++it;
+            }
+        }
+    }
+};
+```
+
 _TODO_
 
 *SFINAE* (Substitution failure is not an error) 
@@ -984,6 +1157,42 @@ Refers to the access of the same value or related storage location
     Deadlock: Threads are stuck waiting for each other, and there is no change in state without external intervention.
     Livelock: Threads are actively changing their state in response to each other, but no progress is made.
     Starvation: Some threads are unable to make progress because others are monopolizing the resources. The monopolizing threads are making progress.
+
+## Example Questions
+
+### Palindrome
+```
+bool isPalindromeUsingLetterFrequency(const std::string& input) {
+    std::unordered_map<char, int> freqMap;
+
+    // Count the frequency of each letter, ignoring case and non-alphabetical characters
+    for (char ch : input) {
+        if (std::isalpha(ch)) {
+            freqMap[std::tolower(ch)]++;
+        }
+    }
+
+    int oddCount = 0;
+    for (const auto& pair : freqMap) {
+        if (pair.second % 2 != 0) {
+            oddCount++;
+        }
+    }
+
+    // If the string's length is odd, allow for one odd-count character (middle character in a palindrome)
+    // If the string's length is even, no characters should have an odd count
+    int effectiveLength = 0; // This counts only alphabetical characters, considering the assumption
+    for (const auto& pair : freqMap) {
+        effectiveLength += pair.second;
+    }
+    
+    if (effectiveLength % 2 == 0) {
+        return oddCount == 0;
+    } else {
+        return oddCount == 1;
+    }
+}
+```
 
 * **
 # Windows (win32) Interfaces and Internals
@@ -2214,7 +2423,3 @@ _TODO_
 		.text (executable)
 		.line (contains gdb line numbers for debugging)
 		.note (notes, etc)
-
-# Common Algorithms and Complexity Problems
-<img src="images/big-o-cheat-sheet-poster.png">
-
