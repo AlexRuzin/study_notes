@@ -322,6 +322,8 @@ Can be done through recursive functions i.e. root, left subtree, right subtree, 
 * Word Frequency count
 * Indexes for unordered data
 
+<img src="images/unordered_map.png">
+
 ## Singleton
 
 A singleton is a design pattern where only one object of its kind exists and can be accessed. For example a class with a static variable. Each instance of the class ensures that the resource is locked before access (mutex guard)
