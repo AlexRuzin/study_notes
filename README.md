@@ -1,7 +1,6 @@
 # Study Notes
-My personal study notes that I have been collecting over the years, but in markdown for convenience purposes
 
-Version 0.1
+The purpose of these study notes are to perpare software engineers for technical interviews, by providing bullet points on various subjects in software. These notes are useful for pre-interview study, and they're not written nor intended as a "cheat sheet", so definitely do not use this during an interview! It will not work and you will fail either way if you are considering it!
 
 * **
 
